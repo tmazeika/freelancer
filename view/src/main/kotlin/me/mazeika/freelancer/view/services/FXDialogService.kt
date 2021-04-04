@@ -25,8 +25,10 @@ class FXDialogService : DialogService {
         showSimpleAlert(
             Alert.AlertType.CONFIRMATION,
             title,
-            message
-        ).map { it == ButtonType.OK }.orElse(false)
+            message,
+            ButtonType.CANCEL,
+            ButtonType.YES
+        ).map { it == ButtonType.YES }.orElse(false)
 
     override fun prompt(
         title: String,
@@ -45,10 +47,14 @@ class FXDialogService : DialogService {
     private fun showSimpleAlert(
         type: Alert.AlertType,
         title: String,
-        message: String
+        message: String,
+        vararg buttonTypes: ButtonType
     ) = Alert(type, message).let {
         it.title = title
         it.headerText = null
+        if (buttonTypes.isNotEmpty()) {
+            it.buttonTypes.setAll(*buttonTypes)
+        }
         it.showAndWait()
     }
 }

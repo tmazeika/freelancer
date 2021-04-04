@@ -5,12 +5,13 @@ import javafx.scene.control.TabPane
 import javax.inject.Inject
 
 class AdminView @Inject constructor(
+    clientsAdminView: ClientsAdminView,
     projectsAdminView: ProjectsAdminView,
     tagsAdminView: TagsAdminView
 ) : TabPane() {
     init {
         tabClosingPolicy = TabClosingPolicy.UNAVAILABLE
-        tabs += Tab("Clients")
+        tabs += Tab("Clients", clientsAdminView)
         tabs += Tab("Projects", projectsAdminView)
         tabs += Tab("Tags", tagsAdminView)
     }
