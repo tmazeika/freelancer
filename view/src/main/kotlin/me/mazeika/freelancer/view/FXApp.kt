@@ -5,8 +5,9 @@ import javafx.application.Application
 import javafx.scene.Parent
 import javafx.scene.Scene
 import javafx.stage.Stage
+import me.mazeika.freelancer.binder.BinderModule
 
-private val INJECTOR = Guice.createInjector(ViewModule())
+private val INJECTOR = Guice.createInjector(ViewModule(), BinderModule())
 
 fun main(args: Array<String>) = Application.launch(FXApp::class.java, *args)
 

@@ -39,16 +39,14 @@ class TagsAdminBinder @Inject constructor(
         store.removeTag(binder.tag)
     }
 
-    abstract class TagBinder : EntityBinder {
-        abstract val name: StringProperty
+    abstract class TagBinder(name: String) : EntityBinder {
+        val name: StringProperty = SimpleStringProperty(name)
         val maxNameLength: Int = 32
 
         internal fun createTag(): Tag = Tag(name.value)
     }
 
-    private inner class EmptyTagBinder : TagBinder() {
-        override val name: StringProperty = SimpleStringProperty("")
-
+    private inner class EmptyTagBinder : TagBinder(name = "") {
         override val isValid: ObservableBooleanValue =
             Bindings.createBooleanBinding({
                 val name = name.value
@@ -60,9 +58,7 @@ class TagsAdminBinder @Inject constructor(
         override fun toString(): String = name.value
     }
 
-    inner class FilledTagBinder(internal val tag: Tag) : TagBinder() {
-        override val name: StringProperty = SimpleStringProperty(tag.name)
-
+    inner class FilledTagBinder(internal val tag: Tag) : TagBinder(name = tag.name) {
         override val isValid: ObservableBooleanValue =
             Bindings.createBooleanBinding({
                 val name = name.value

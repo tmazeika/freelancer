@@ -5,6 +5,7 @@ import javafx.beans.property.*
 import javafx.beans.value.ObservableBooleanValue
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
+import me.mazeika.freelancer.binder.i18n.I18nService
 import me.mazeika.freelancer.binder.services.DialogService
 import me.mazeika.freelancer.model.Client
 import me.mazeika.freelancer.model.Project
@@ -15,7 +16,8 @@ import javax.inject.Inject
 
 class ProjectsAdminBinder @Inject constructor(
     private val store: Store,
-    dialogService: DialogService,
+    private val i18nService: I18nService,
+    dialogService: DialogService
 ) : EntityAdminBinder<ProjectsAdminBinder.ProjectBinder, ProjectsAdminBinder.FilledProjectBinder>(
     entityName = "Project",
     dialogService
@@ -52,37 +54,40 @@ class ProjectsAdminBinder @Inject constructor(
         store.removeProject(binder.project)
     }
 
-    abstract inner class ProjectBinder : EntityBinder {
+    abstract inner class ProjectBinder(
+        clientName: String,
+        name: String,
+        colorIndex: Int,
+        hourlyRate: BigDecimal,
+        currency: Currency
+    ) : EntityBinder {
         val clientNames: ObservableList<String> =
             FXCollections.unmodifiableObservableList(this@ProjectsAdminBinder.clientNames)
-        val currencies: List<String> =
-            Currency.getAvailableCurrencies().map { it.currencyCode }.sorted()
         val maxNameLength: Int = 128
 
-        abstract val clientName: StringProperty
-        abstract val name: StringProperty
-        abstract val colorIndex: IntegerProperty
-        abstract val hourlyRate: Property<BigDecimal>
-        abstract val currency: StringProperty
+        val clientName: StringProperty = SimpleStringProperty(clientName)
+        val name: StringProperty = SimpleStringProperty(name)
+        val colorIndex: IntegerProperty = SimpleIntegerProperty(colorIndex)
+        val hourlyRate: ObjectProperty<BigDecimal> =
+            SimpleObjectProperty(hourlyRate)
+        val currency: ObjectProperty<Currency> = SimpleObjectProperty(currency)
 
         internal fun createProject(): Project = Project(
             client = store.getClient(clientName.value),
             name = name.value,
             colorIndex = colorIndex.value,
             hourlyRate = hourlyRate.value,
-            currency = Currency.getInstance(currency.value)
+            currency = currency.value
         )
     }
 
-    private inner class EmptyProjectBinder : ProjectBinder() {
-        override val clientName: StringProperty = SimpleStringProperty("")
-        override val name: StringProperty = SimpleStringProperty("")
-        override val colorIndex: IntegerProperty = SimpleIntegerProperty(0)
-        override val hourlyRate: Property<BigDecimal> =
-            SimpleObjectProperty(BigDecimal.ZERO)
-        override val currency: StringProperty =
-            SimpleStringProperty(Currency.getInstance(Locale.getDefault()).currencyCode)
-
+    private inner class EmptyProjectBinder : ProjectBinder(
+        clientName = "",
+        name = "",
+        colorIndex = 0,
+        hourlyRate = BigDecimal.ZERO,
+        currency = i18nService.defaultCurrency
+    ) {
         override val isValid: ObservableBooleanValue =
             Bindings.createBooleanBinding({
                 val clientName = clientName.value
@@ -97,16 +102,13 @@ class ProjectsAdminBinder @Inject constructor(
     }
 
     inner class FilledProjectBinder(internal val project: Project) :
-        ProjectBinder() {
-        override val clientName: StringProperty =
-            SimpleStringProperty(project.client.name)
-        override val name: StringProperty = SimpleStringProperty(project.name)
-        override val colorIndex: IntegerProperty =
-            SimpleIntegerProperty(project.colorIndex)
-        override val hourlyRate: Property<BigDecimal> =
-            SimpleObjectProperty(project.hourlyRate)
-        override val currency: StringProperty =
-            SimpleStringProperty(project.currency.currencyCode)
+        ProjectBinder(
+            clientName = project.client.name,
+            name = project.name,
+            colorIndex = project.colorIndex,
+            hourlyRate = project.hourlyRate,
+            currency = project.currency
+        ) {
 
         override val isValid: ObservableBooleanValue =
             Bindings.createBooleanBinding({

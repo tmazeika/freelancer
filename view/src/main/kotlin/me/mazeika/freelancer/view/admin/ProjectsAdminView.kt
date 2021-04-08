@@ -10,18 +10,18 @@ import javafx.scene.shape.Circle
 import javafx.scene.text.Text
 import javafx.scene.text.TextFlow
 import me.mazeika.freelancer.binder.admin.ProjectsAdminBinder
+import me.mazeika.freelancer.binder.i18n.I18nService
 import me.mazeika.freelancer.view.components.EntityForm
 import me.mazeika.freelancer.view.services.ColorService
 import me.mazeika.freelancer.view.util.BidiBindings
 import me.mazeika.freelancer.view.util.ColorIndexBidiConverter
 import java.math.BigDecimal
-import java.text.NumberFormat
-import java.util.*
 import javax.inject.Inject
 
 class ProjectsAdminView @Inject constructor(
     vm: ProjectsAdminBinder,
-    private val colorService: ColorService
+    private val colorService: ColorService,
+    private val i18nService: I18nService
 ) :
     EntityAdminView<ProjectsAdminBinder.ProjectBinder, ProjectsAdminBinder.FilledProjectBinder>(
         vm
@@ -53,7 +53,7 @@ class ProjectsAdminView @Inject constructor(
             EntityForm.ComboInput(
                 name = "Currency",
                 value = vm.currency,
-                options = vm.currencies,
+                options = i18nService.availableCurrencies,
             )
         )
 
@@ -88,10 +88,7 @@ class ProjectsAdminView @Inject constructor(
                 textProperty().bind(Bindings.createStringBinding({
                     val hourlyRate = item.hourlyRate.value
                     val currency = item.currency.value
-                    val formatter = NumberFormat.getCurrencyInstance()
-                    formatter.currency = Currency.getInstance(currency)
-                    formatter.maximumFractionDigits = 32
-                    formatter.format(hourlyRate) + "/hr"
+                    i18nService.formatMoney(hourlyRate, currency) + "/hr"
                 }, item.hourlyRate, item.currency))
             }
             children.addAll(circle, text, spacer, rateText)

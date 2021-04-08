@@ -58,12 +58,12 @@ class EntityForm(vararg components: Component) : GridPane() {
         }
     }
 
-    class ComboInput(
+    class ComboInput<T> (
         override val name: String,
-        value: StringProperty,
-        options: List<String>
+        value: Property<T>,
+        options: List<T>
     ) : Component {
-        override val node: Node = ComboBox<String>().apply {
+        override val node: Node = ComboBox<T>().apply {
             items.setAll(options)
             valueProperty().bindBidirectional(value)
         }
