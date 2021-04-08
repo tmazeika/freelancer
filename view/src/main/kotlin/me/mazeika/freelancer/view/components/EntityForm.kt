@@ -1,6 +1,7 @@
 package me.mazeika.freelancer.view.components
 
 import javafx.application.Platform
+import javafx.beans.property.Property
 import javafx.beans.property.StringProperty
 import javafx.scene.Node
 import javafx.scene.control.ComboBox
@@ -8,7 +9,10 @@ import javafx.scene.control.Label
 import javafx.scene.control.TextField
 import javafx.scene.control.TextFormatter
 import javafx.scene.layout.GridPane
+import javafx.scene.paint.Color
 import me.mazeika.freelancer.view.util.MaxLengthFilter
+import me.mazeika.freelancer.view.util.NonNegativeDecimalTextFormatter
+import java.math.BigDecimal
 
 class EntityForm(vararg components: Component) : GridPane() {
     init {
@@ -17,6 +21,9 @@ class EntityForm(vararg components: Component) : GridPane() {
         components.forEachIndexed { i, component ->
             add(Label(component.name), 0, i)
             add(component.node, 1, i)
+            if (i == 0) {
+                Platform.runLater { component.node.requestFocus() }
+            }
         }
     }
 
@@ -25,17 +32,13 @@ class EntityForm(vararg components: Component) : GridPane() {
         val node: Node
     }
 
-    class Text(
+    class TextInput(
         override val name: String,
         value: StringProperty,
-        maxLength: Int = -1,
-        initialFocus: Boolean = false
+        maxLength: Int? = null
     ) : Component {
         override val node: Node = TextField().apply {
-            if (initialFocus) {
-                Platform.runLater { requestFocus() }
-            }
-            if (maxLength >= 0) {
+            if (maxLength != null) {
                 textFormatter = TextFormatter<TextFormatter.Change>(
                     MaxLengthFilter(maxLength)
                 )
@@ -44,16 +47,36 @@ class EntityForm(vararg components: Component) : GridPane() {
         }
     }
 
-    class Combo(
+    class NonNegativeDecimalInput(
+        override val name: String,
+        value: Property<BigDecimal>
+    ) : Component {
+        override val node: Node = TextField().apply {
+            textFormatter = NonNegativeDecimalTextFormatter().apply {
+                valueProperty().bindBidirectional(value)
+            }
+        }
+    }
+
+    class ComboInput(
         override val name: String,
         value: StringProperty,
-        options: List<String>,
-        initialFocus: Boolean = false
+        options: List<String>
     ) : Component {
         override val node: Node = ComboBox<String>().apply {
-            if (initialFocus) {
-                Platform.runLater { requestFocus() }
-            }
+            items.setAll(options)
+            valueProperty().bindBidirectional(value)
+        }
+    }
+
+    class ColorComboInput(
+        override val name: String,
+        value: Property<Color>,
+        options: List<Color>
+    ) : Component {
+        override val node: Node = ComboBox<Color>().apply {
+            setCellFactory { ColorCellFactory() }
+            buttonCell = ColorCellFactory()
             items.setAll(options)
             valueProperty().bindBidirectional(value)
         }

@@ -17,34 +17,33 @@ class TagsAdminBinder @Inject constructor(
     dialogService
 ) {
     init {
-        store.onTagsUpdated += ::updateTags
-        updateTags()
+        store.onTagsUpdated += {
+            entities.setAll(store.getTags().map(::FilledTagBinder))
+        }
     }
 
     override fun createEmptyBinder(): TagBinder = EmptyTagBinder()
 
+    override fun copyFilledBinder(binder: FilledTagBinder): FilledTagBinder =
+        FilledTagBinder(binder.tag)
+
     override fun create(binder: TagBinder) {
-        store.addTag(Tag(binder.name.value))
-        updateTags()
+        store.addTag(binder.createTag())
     }
 
     override fun edit(binder: FilledTagBinder) {
-        store.replaceTag(old = binder.tag, new = Tag(binder.name.value))
-        updateTags()
+        store.replaceTag(old = binder.tag, new = binder.createTag())
     }
 
     override fun delete(binder: FilledTagBinder) {
         store.removeTag(binder.tag)
-        updateTags()
-    }
-
-    private fun updateTags() {
-        entities.setAll(store.getTags().map(::FilledTagBinder))
     }
 
     abstract class TagBinder : EntityBinder {
         abstract val name: StringProperty
         val maxNameLength: Int = 32
+
+        internal fun createTag(): Tag = Tag(name.value)
     }
 
     private inner class EmptyTagBinder : TagBinder() {

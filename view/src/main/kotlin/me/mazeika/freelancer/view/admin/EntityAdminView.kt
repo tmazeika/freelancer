@@ -8,11 +8,13 @@ import javafx.scene.control.ListView
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.FlowPane
 import me.mazeika.freelancer.binder.admin.EntityAdminBinder
+import me.mazeika.freelancer.view.components.TextThenGraphicCellFactory
 
 abstract class EntityAdminView<EB, FilledEB>(vm: EntityAdminBinder<EB, FilledEB>) :
     BorderPane() where EB : EntityAdminBinder.EntityBinder, FilledEB : EB {
     init {
         val list = ListView<FilledEB>().apply {
+            setCellFactory { TextThenGraphicCellFactory { createListCell(it) } }
             Bindings.bindContent(items, vm.entities)
             vm.selected.bind(selectionModel.selectedItemProperty())
         }
@@ -36,6 +38,8 @@ abstract class EntityAdminView<EB, FilledEB>(vm: EntityAdminBinder<EB, FilledEB>
         top = actionBar
         center = list
     }
+
+    open fun createListCell(item: EB): Node? = null
 
     abstract fun createEntityView(vm: EB): Node
 }

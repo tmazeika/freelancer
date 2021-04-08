@@ -4,6 +4,7 @@ class Notifier {
     private val handlers: MutableList<() -> Unit> = mutableListOf()
 
     operator fun plusAssign(block: () -> Unit) {
+        block()
         handlers += block
     }
 

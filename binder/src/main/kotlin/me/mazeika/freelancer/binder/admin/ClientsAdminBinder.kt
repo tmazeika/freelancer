@@ -7,6 +7,7 @@ import javafx.beans.value.ObservableBooleanValue
 import me.mazeika.freelancer.binder.services.DialogService
 import me.mazeika.freelancer.model.Client
 import me.mazeika.freelancer.model.Store
+import java.util.*
 import javax.inject.Inject
 
 class ClientsAdminBinder @Inject constructor(
@@ -17,41 +18,49 @@ class ClientsAdminBinder @Inject constructor(
     dialogService
 ) {
     init {
-        store.onClientsUpdated += ::updateClients
-        updateClients()
+        store.onClientsUpdated += {
+            entities.setAll(store.getClients().map(::FilledClientBinder))
+        }
     }
 
     override fun createEmptyBinder(): ClientBinder = EmptyClientBinder()
 
+    override fun copyFilledBinder(binder: FilledClientBinder): FilledClientBinder =
+        FilledClientBinder(binder.client)
+
     override fun create(binder: ClientBinder) {
-        store.addClient(Client(binder.name.value))
-        updateClients()
+        store.addClient(binder.createClient())
     }
 
     override fun edit(binder: FilledClientBinder) {
         store.replaceClient(
             old = binder.client,
-            new = Client(binder.name.value)
+            new = binder.createClient()
         )
-        updateClients()
     }
 
     override fun delete(binder: FilledClientBinder) {
         store.removeClient(binder.client)
-        updateClients()
     }
 
-    private fun updateClients() {
-        entities.setAll(store.getClients().map(::FilledClientBinder))
-    }
+    override val extraDeleteMessage: String =
+        "This will also delete all of the client's projects."
 
     abstract class ClientBinder : EntityBinder {
+        val currencies: List<String> =
+            Currency.getAvailableCurrencies().map { it.currencyCode }.sorted()
+
         abstract val name: StringProperty
+        abstract val currency: StringProperty
         val maxNameLength: Int = 128
+
+        internal fun createClient(): Client = Client(name.value, Currency.getInstance(currency.value))
     }
 
     private inner class EmptyClientBinder : ClientBinder() {
         override val name: StringProperty = SimpleStringProperty("")
+        override val currency: StringProperty =
+            SimpleStringProperty(Currency.getInstance(Locale.getDefault()).currencyCode)
 
         override val isValid: ObservableBooleanValue =
             Bindings.createBooleanBinding({
@@ -67,6 +76,8 @@ class ClientsAdminBinder @Inject constructor(
     inner class FilledClientBinder(internal val client: Client) :
         ClientBinder() {
         override val name: StringProperty = SimpleStringProperty(client.name)
+        override val currency: StringProperty =
+            SimpleStringProperty(client.currency.currencyCode)
 
         override val isValid: ObservableBooleanValue =
             Bindings.createBooleanBinding({

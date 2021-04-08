@@ -11,11 +11,15 @@ class ClientsAdminView @Inject constructor(vm: ClientsAdminBinder) :
     ) {
     override fun createEntityView(vm: ClientsAdminBinder.ClientBinder): Node =
         EntityForm(
-            EntityForm.Text(
+            EntityForm.TextInput(
                 name = "Name",
                 value = vm.name,
-                maxLength = vm.maxNameLength,
-                initialFocus = true
+                maxLength = vm.maxNameLength
+            ),
+            EntityForm.ComboInput(
+                name = "Currency",
+                value = vm.currency,
+                options = vm.currencies,
             )
         )
 }

@@ -1,18 +1,19 @@
 package me.mazeika.freelancer.model
 
+import java.math.BigDecimal
 import java.util.*
 
 data class Project(
     val client: Client,
     val name: String,
     val colorIndex: Int,
-    val hourlyCost: Long,
+    val hourlyRate: BigDecimal,
     val currency: Currency
 ) : Comparable<Project> {
     init {
         require(name.length in 1..128)
         require(colorIndex >= 0)
-        require(hourlyCost >= 0)
+        require(hourlyRate >= BigDecimal.ZERO)
     }
 
     fun isIdentifiedBy(clientName: String, projectName: String): Boolean {

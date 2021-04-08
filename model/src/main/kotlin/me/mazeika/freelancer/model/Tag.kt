@@ -1,6 +1,6 @@
 package me.mazeika.freelancer.model
 
-data class Tag(val name: String) : Comparable<Tag> {
+class Tag(val name: String) : Comparable<Tag> {
     init {
         require(name.length in 1..32)
     }

@@ -1,6 +1,8 @@
 package me.mazeika.freelancer.model
 
-data class Client(val name: String) : Comparable<Client> {
+import java.util.*
+
+data class Client(val name: String, val currency: Currency) : Comparable<Client> {
     init {
         require(name.length in 1..128)
     }

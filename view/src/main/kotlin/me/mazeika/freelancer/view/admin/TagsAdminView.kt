@@ -11,11 +11,10 @@ class TagsAdminView @Inject constructor(vm: TagsAdminBinder) :
     ) {
     override fun createEntityView(vm: TagsAdminBinder.TagBinder): Node =
         EntityForm(
-            EntityForm.Text(
+            EntityForm.TextInput(
                 name = "Name",
                 value = vm.name,
-                maxLength = vm.maxNameLength,
-                initialFocus = true
+                maxLength = vm.maxNameLength
             )
         )
 }

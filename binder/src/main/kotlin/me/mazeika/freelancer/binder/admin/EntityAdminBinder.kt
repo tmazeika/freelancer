@@ -22,6 +22,10 @@ abstract class EntityAdminBinder<EB, FilledEB>(
         isEditDeleteVisible.bind(selected.isNotNull)
     }
 
+    protected abstract fun createEmptyBinder(): EB
+
+    protected abstract fun copyFilledBinder(binder: FilledEB): FilledEB
+
     fun onCreate(dialogViewFactory: (EB) -> Node): Boolean {
         val binder = createEmptyBinder()
         val ok = dialogService.prompt(
@@ -33,12 +37,10 @@ abstract class EntityAdminBinder<EB, FilledEB>(
         return ok
     }
 
-    protected abstract fun createEmptyBinder(): EB
-
     protected abstract fun create(binder: EB)
 
     fun onEdit(dialogViewFactory: (EB) -> Node): Boolean {
-        val binder = selected.value!!
+        val binder = copyFilledBinder(selected.value)
         val ok = dialogService.prompt(
             title = "Edit $entityName",
             content = dialogViewFactory(binder),
@@ -51,14 +53,16 @@ abstract class EntityAdminBinder<EB, FilledEB>(
     protected abstract fun edit(binder: FilledEB)
 
     fun onDelete(): Boolean {
-        val binder = selected.value!!
+        val binder = copyFilledBinder(selected.value)
         val ok = dialogService.confirm(
             title = "Delete $entityName",
-            message = """Are you sure you want to delete "$binder"?"""
+            message = """Are you sure you want to delete "$binder"? $extraDeleteMessage""".trimEnd()
         )
         if (ok) delete(binder)
         return ok
     }
+
+    protected open val extraDeleteMessage: String = ""
 
     protected abstract fun delete(binder: FilledEB)
 

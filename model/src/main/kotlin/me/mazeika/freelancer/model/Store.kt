@@ -88,7 +88,9 @@ class Store {
     }
 
     fun removeClient(client: Client) {
+        projects.removeAll { it.client == client }
         clients.removeSorted(client)
+        onProjectsUpdated()
         onClientsUpdated()
     }
 

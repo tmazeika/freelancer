@@ -1,2 +1,2 @@
-rootProject.name = "freelancer2"
+rootProject.name = "freelancer"
 include("binder", "view", "model")

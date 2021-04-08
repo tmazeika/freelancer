@@ -18,7 +18,10 @@ class FXApp : Application() {
             cause.printStackTrace()
         }
         title = "Freelancer"
-        scene = Scene(view, 800.0, 600.0)
+        scene = Scene(view, 800.0, 600.0).apply {
+            stylesheets += FXApp::class.java.getResource("/styles.css")!!
+                .toString()
+        }
         show()
     }
 }
