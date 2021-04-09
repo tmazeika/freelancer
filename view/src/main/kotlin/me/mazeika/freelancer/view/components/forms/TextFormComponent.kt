@@ -9,8 +9,9 @@ import me.mazeika.freelancer.view.util.MaxLengthFilter
 class TextFormComponent(
     override val label: String,
     value: Property<String>,
-    maxLength: Int? = null,
+    maxLength: Int? = null
 ) : TextField(), FormComponent {
+
     init {
         if (maxLength != null) {
             textFormatter =

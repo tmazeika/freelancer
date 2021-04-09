@@ -6,7 +6,6 @@ import javafx.scene.layout.BorderPane
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
-import javafx.scene.paint.Color
 import javafx.scene.shape.Circle
 import javafx.scene.text.Text
 import javafx.scene.text.TextFlow
@@ -18,17 +17,18 @@ import me.mazeika.freelancer.view.components.GraphicCellFactory
 import me.mazeika.freelancer.view.components.forms.*
 import me.mazeika.freelancer.view.services.ColorService
 import me.mazeika.freelancer.view.util.BidiBindings
-import me.mazeika.freelancer.view.util.ColorIndexBidiConverter
+import me.mazeika.freelancer.view.util.ColorIndexConverter
 import java.math.BigDecimal
 import javax.inject.Inject
 
 class ProjectsAdminView @Inject constructor(
     vm: ProjectsAdminBinder,
     private val colorService: ColorService,
-    private val i18nService: I18nService,
+    private val i18nService: I18nService
 ) : BorderPane() {
+
     init {
-        top = EntityAdminActionBar(vm) { project ->
+        top = AdminActionBar(vm) { project ->
             GridForm(
                 OptionsFormComponent(
                     label = "Client",
@@ -42,13 +42,11 @@ class ProjectsAdminView @Inject constructor(
                 ),
                 ColorOptionsFormComponent(
                     label = "Color",
-                    value = SimpleObjectProperty<Color>().apply {
-                        BidiBindings.bind(
-                            this,
-                            project.colorIndex,
-                            ColorIndexBidiConverter(colorService.colors)
-                        )
-                    },
+                    value = BidiBindings.bind(
+                        SimpleObjectProperty(),
+                        project.colorIndex,
+                        ColorIndexConverter(colorService.colors)
+                    ),
                     options = colorService.colors
                 ),
                 NonNegativeDecimalFormComponent(
@@ -59,44 +57,46 @@ class ProjectsAdminView @Inject constructor(
                     label = "Currency",
                     value = project.currency,
                     options = i18nService.availableCurrencies
-                ),
+                )
             )
         }
-        center = EntityAdminList(vm, GraphicCellFactory { project ->
-            HBox().apply {
-                alignment = Pos.CENTER_LEFT
-                spacing = 10.0
-                val rateText = bind({ hourlyRate, currency ->
-                    i18nService.formatMoney(hourlyRate, currency) + "/hr"
-                }, project.hourlyRate, project.currency)
-                children.setAll(
-                    Circle(5.0).apply {
-                        fillProperty().bind(project.colorIndex.map { i ->
-                            colorService.colors[i.toInt()]
-                        })
-                    },
-                    TextFlow(
-                        Text().apply {
-                            textProperty().bind(project.name)
+        center = AdminEntityList(vm) {
+            GraphicCellFactory { project ->
+                HBox().apply {
+                    alignment = Pos.CENTER_LEFT
+                    spacing = 10.0
+                    val rateText = bind({ hourlyRate, currency ->
+                        i18nService.formatMoney(hourlyRate, currency) + "/hr"
+                    }, project.hourlyRate, project.currency)
+                    children.setAll(
+                        Circle(5.0).apply {
+                            fillProperty().bind(project.colorIndex.map { i ->
+                                colorService.colors[i.toInt()]
+                            })
                         },
-                        Text("\n"),
+                        TextFlow(
+                            Text().apply {
+                                textProperty().bind(project.name)
+                            },
+                            Text("\n"),
+                            Text().apply {
+                                styleClass += "muted-text"
+                                textProperty().bind(project.clientName)
+                            }
+                        ),
+                        Pane().apply {
+                            HBox.setHgrow(this, Priority.ALWAYS)
+                        },
                         Text().apply {
-                            styleClass += "muted-text"
-                            textProperty().bind(project.clientName)
+                            visibleProperty().bind(project.hourlyRate.map {
+                                it != BigDecimal.ZERO
+                            })
+                            textProperty().bind(rateText)
                         }
-                    ),
-                    Pane().apply {
-                        HBox.setHgrow(this, Priority.ALWAYS)
-                    },
-                    Text().apply {
-                        visibleProperty().bind(project.hourlyRate.map {
-                            it != BigDecimal.ZERO
-                        })
-                        textProperty().bind(rateText)
-                    },
-                )
+                    )
+                }
             }
-        })
+        }
     }
 }
 

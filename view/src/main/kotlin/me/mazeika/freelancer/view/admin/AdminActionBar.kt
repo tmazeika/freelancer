@@ -6,10 +6,11 @@ import javafx.scene.control.Button
 import javafx.scene.layout.FlowPane
 import me.mazeika.freelancer.binder.admin.EntityActionHandler
 
-class EntityAdminActionBar<T>(
+class AdminActionBar<T>(
     vm: EntityActionHandler<T>,
-    createDialogView: (T) -> Node,
+    createDialogView: (T) -> Node
 ) : FlowPane() {
+
     init {
         hgap = 10.0
         vgap = 10.0
@@ -25,7 +26,7 @@ class EntityAdminActionBar<T>(
             Button("Delete").apply {
                 setOnAction { vm.onDelete() }
                 visibleProperty().bind(vm.isEditDeleteVisible)
-            },
+            }
         )
     }
 }

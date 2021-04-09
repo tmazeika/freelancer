@@ -5,6 +5,7 @@ import javafx.beans.value.ObservableBooleanValue
 import javafx.scene.Node
 
 interface DialogService {
+
     /**
      * Informs the user of some message with a blocking dialog box.
      */

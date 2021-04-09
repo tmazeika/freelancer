@@ -1,7 +1,10 @@
 package me.mazeika.freelancer.binder.admin
 
 import javafx.beans.binding.Bindings
-import javafx.beans.property.*
+import javafx.beans.property.ObjectProperty
+import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.property.SimpleStringProperty
+import javafx.beans.property.StringProperty
 import javafx.beans.value.ObservableBooleanValue
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
@@ -18,22 +21,15 @@ import javax.inject.Inject
 class ProjectsAdminBinder @Inject constructor(
     private val store: Store,
     private val dialogService: DialogService,
-    private val i18nService: I18nService,
-) : EntityActionHandler<ProjectsAdminBinder.ProjectBinder>,
-    EntityAdmin<ProjectsAdminBinder.FilledProjectBinder> {
+    private val i18nService: I18nService
+) : AdminBinder<ProjectsAdminBinder.ProjectBinder, ProjectsAdminBinder.FilledProjectBinder>() {
 
-    override val entities: ObservableList<FilledProjectBinder> =
-        FXCollections.observableArrayList()
-    override val selected: ObjectProperty<FilledProjectBinder> =
-        SimpleObjectProperty()
-    override val isEditDeleteVisible: BooleanProperty = SimpleBooleanProperty()
-
-    private val clientNames: ObservableList<String> =
+    private val _clientNames: ObservableList<String> =
         FXCollections.observableArrayList()
 
     init {
         store.onClientsUpdated += {
-            clientNames.setAll(store.getClients().map(Client::name))
+            _clientNames.setAll(store.getClients().map(Client::name))
         }
         store.onProjectsUpdated += {
             entities.setAll(store.getProjects().map(::FilledProjectBinder))
@@ -73,7 +69,7 @@ class ProjectsAdminBinder @Inject constructor(
         val binder = FilledProjectBinder(selected.value.project)
         val ok = dialogService.confirm(
             title = "Delete Client",
-            message = """Are you sure you want to delete "$binder"?""".trimEnd()
+            message = "Are you sure you want to delete \"$binder\"?"
         )
         if (ok) {
             store.removeProject(binder.project)
@@ -86,22 +82,23 @@ class ProjectsAdminBinder @Inject constructor(
         name: String,
         colorIndex: Int,
         hourlyRate: BigDecimal,
-        currency: Currency,
+        currency: Currency
     ) : EntityBinder {
+
         val clientNames: ObservableList<String> =
-            FXCollections.unmodifiableObservableList(this@ProjectsAdminBinder.clientNames)
+            FXCollections.unmodifiableObservableList(_clientNames)
         val maxNameLength: Int = 128
 
         val clientName: StringProperty = SimpleStringProperty(clientName)
         val name: StringProperty = SimpleStringProperty(name)
-        val colorIndex: IntegerProperty = SimpleIntegerProperty(colorIndex)
+        val colorIndex: ObjectProperty<Int> = SimpleObjectProperty(colorIndex)
         val hourlyRate: ObjectProperty<BigDecimal> =
             SimpleObjectProperty(hourlyRate)
         val currency: ObjectProperty<Currency> = SimpleObjectProperty(currency)
 
         internal fun createProject(): Project = Project(
             client = store.getClient(clientName.value),
-            name = name.value,
+            name = name.value.trim(),
             colorIndex = colorIndex.value,
             hourlyRate = hourlyRate.value,
             currency = currency.value
@@ -115,14 +112,14 @@ class ProjectsAdminBinder @Inject constructor(
         hourlyRate = BigDecimal.ZERO,
         currency = i18nService.defaultCurrency
     ) {
+
         override val isValid: ObservableBooleanValue =
             Bindings.createBooleanBinding({
                 val clientName = clientName.value
-                val name = name.value
-                val clientExists = store.containsClient(clientName)
-                val unique = !store.containsProject(clientName, name)
-                val validLength = name.length in 1..maxNameLength
-                clientExists && unique && validLength
+                val name = name.value.trim()
+                val isProjectUnique = !store.containsProject(clientName, name)
+                val isNameValid = name.isNotEmpty()
+                isProjectUnique && isNameValid
             }, clientName, name)
 
         override fun toString(): String = name.value
@@ -140,11 +137,11 @@ class ProjectsAdminBinder @Inject constructor(
         override val isValid: ObservableBooleanValue =
             Bindings.createBooleanBinding({
                 val clientName = clientName.value
-                val name = name.value
-                val unchanged = project.isIdentifiedBy(clientName, name)
-                val unique = !store.containsProject(clientName, name)
-                val validLength = name.length in 1..maxNameLength
-                (unchanged || unique) && validLength
+                val name = name.value.trim()
+                val isUnchanged = project.isIdentifiedBy(clientName, name)
+                val isProjectUnique = !store.containsProject(clientName, name)
+                val isNameValid = name.isNotEmpty()
+                (isUnchanged || isProjectUnique) && isNameValid
             }, clientName, name)
 
         override fun toString(): String = project.name

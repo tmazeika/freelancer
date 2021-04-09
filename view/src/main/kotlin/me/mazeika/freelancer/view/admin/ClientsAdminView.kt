@@ -10,10 +10,11 @@ import javax.inject.Inject
 
 class ClientsAdminView @Inject constructor(
     vm: ClientsAdminBinder,
-    i18nService: I18nService,
+    i18nService: I18nService
 ) : BorderPane() {
+
     init {
-        top = EntityAdminActionBar(vm) { client ->
+        top = AdminActionBar(vm) { client ->
             GridForm(
                 TextFormComponent(
                     label = "Name",
@@ -24,9 +25,9 @@ class ClientsAdminView @Inject constructor(
                     label = "Currency",
                     value = client.currency,
                     options = i18nService.availableCurrencies
-                ),
+                )
             )
         }
-        center = EntityAdminList(vm)
+        center = AdminEntityList(vm)
     }
 }

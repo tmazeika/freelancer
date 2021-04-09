@@ -7,8 +7,9 @@ import me.mazeika.freelancer.view.components.forms.TextFormComponent
 import javax.inject.Inject
 
 class TagsAdminView @Inject constructor(vm: TagsAdminBinder) : BorderPane() {
+
     init {
-        top = EntityAdminActionBar(vm) { tag ->
+        top = AdminActionBar(vm) { tag ->
             GridForm(
                 TextFormComponent(
                     label = "Name",
@@ -17,6 +18,6 @@ class TagsAdminView @Inject constructor(vm: TagsAdminBinder) : BorderPane() {
                 )
             )
         }
-        center = EntityAdminList(vm)
+        center = AdminEntityList(vm)
     }
 }

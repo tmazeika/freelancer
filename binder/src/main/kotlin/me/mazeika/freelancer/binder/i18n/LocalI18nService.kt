@@ -5,6 +5,7 @@ import java.text.NumberFormat
 import java.util.*
 
 class LocalI18nService : I18nService {
+
     override val availableCurrencies: List<Currency> =
         Currency.getAvailableCurrencies().sortedBy { it.currencyCode }
     override val defaultLocale: Locale = Locale.getDefault()

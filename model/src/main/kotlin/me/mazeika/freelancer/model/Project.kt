@@ -10,16 +10,17 @@ data class Project(
     val hourlyRate: BigDecimal,
     val currency: Currency
 ) : Comparable<Project> {
+
     init {
-        require(name.length in 1..128)
+        require(name.isNotBlank() && name.length in 1..128)
         require(colorIndex >= 0)
         require(hourlyRate >= BigDecimal.ZERO)
     }
 
     fun isIdentifiedBy(clientName: String, projectName: String): Boolean {
-        val clientNameEq = client.name.equals(clientName, ignoreCase = true)
-        val nameEq = name.equals(projectName, ignoreCase = true)
-        return clientNameEq && nameEq
+        val isClientNameEq = client.name.equals(clientName, ignoreCase = true)
+        val isNameEq = name.equals(projectName, ignoreCase = true)
+        return isClientNameEq && isNameEq
     }
 
     override fun compareTo(other: Project): Int =

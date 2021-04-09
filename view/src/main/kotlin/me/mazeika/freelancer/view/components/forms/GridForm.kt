@@ -5,6 +5,7 @@ import javafx.scene.control.Label
 import javafx.scene.layout.GridPane
 
 class GridForm(vararg components: FormComponent) : GridPane() {
+
     init {
         hgap = 10.0
         vgap = 10.0

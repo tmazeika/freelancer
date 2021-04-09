@@ -10,16 +10,19 @@ import me.mazeika.freelancer.view.components.GraphicCellFactory
 class ColorOptionsFormComponent(
     override val label: String,
     value: Property<Color>,
-    options: Collection<Color>,
+    options: Collection<Color>
 ) : ComboBox<Color>(), FormComponent {
+
     init {
-        val colorCellFactory = GraphicCellFactory<Color> { color ->
-            Circle(5.0).apply {
-                fill = color
+        val createColorCellFactory = {
+            GraphicCellFactory<Color> { color ->
+                Circle(5.0).apply {
+                    fill = color
+                }
             }
         }
-        buttonCell = colorCellFactory
-        setCellFactory { colorCellFactory }
+        buttonCell = createColorCellFactory()
+        setCellFactory { createColorCellFactory() }
         items.setAll(options)
         valueProperty().bindBidirectional(value)
     }

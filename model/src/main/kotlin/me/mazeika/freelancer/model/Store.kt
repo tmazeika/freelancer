@@ -7,6 +7,7 @@ import kotlin.math.max
 
 @Singleton
 class Store {
+
     private val clients: MutableList<Client> = mutableListOf()
     private val projects: MutableList<Project> = mutableListOf()
     private val tags: MutableList<Tag> = mutableListOf()

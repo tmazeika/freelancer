@@ -9,6 +9,7 @@ import javafx.scene.control.ButtonType
 import me.mazeika.freelancer.binder.services.DialogService
 
 class FXDialogService : DialogService {
+
     override fun inform(title: String, message: String) {
         showSimpleAlert(Alert.AlertType.INFORMATION, title, message)
     }
@@ -33,7 +34,7 @@ class FXDialogService : DialogService {
     override fun prompt(
         title: String,
         content: Node,
-        isValid: ObservableBooleanValue,
+        isValid: ObservableBooleanValue
     ): Boolean =
         Alert(Alert.AlertType.NONE).let {
             it.title = title
@@ -49,7 +50,7 @@ class FXDialogService : DialogService {
         type: Alert.AlertType,
         title: String,
         message: String,
-        vararg buttonTypes: ButtonType,
+        vararg buttonTypes: ButtonType
     ) = Alert(type, message).let {
         it.title = title
         it.headerText = null

@@ -1,8 +1,9 @@
 package me.mazeika.freelancer.model
 
 class Tag(val name: String) : Comparable<Tag> {
+
     init {
-        require(name.length in 1..32)
+        require(name.isNotBlank() && name.length in 1..32)
     }
 
     fun isIdentifiedBy(name: String): Boolean =

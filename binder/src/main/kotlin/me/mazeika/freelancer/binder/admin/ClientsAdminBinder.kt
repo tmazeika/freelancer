@@ -1,10 +1,11 @@
 package me.mazeika.freelancer.binder.admin
 
 import javafx.beans.binding.Bindings
-import javafx.beans.property.*
+import javafx.beans.property.ObjectProperty
+import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.property.SimpleStringProperty
+import javafx.beans.property.StringProperty
 import javafx.beans.value.ObservableBooleanValue
-import javafx.collections.FXCollections
-import javafx.collections.ObservableList
 import javafx.scene.Node
 import me.mazeika.freelancer.binder.i18n.I18nService
 import me.mazeika.freelancer.binder.services.DialogService
@@ -16,15 +17,8 @@ import javax.inject.Inject
 class ClientsAdminBinder @Inject constructor(
     private val store: Store,
     private val dialogService: DialogService,
-    private val i18nService: I18nService,
-) : EntityActionHandler<ClientsAdminBinder.ClientBinder>,
-    EntityAdmin<ClientsAdminBinder.FilledClientBinder> {
-
-    override val entities: ObservableList<FilledClientBinder> =
-        FXCollections.observableArrayList()
-    override val selected: ObjectProperty<FilledClientBinder> =
-        SimpleObjectProperty()
-    override val isEditDeleteVisible: BooleanProperty = SimpleBooleanProperty()
+    private val i18nService: I18nService
+) : AdminBinder<ClientsAdminBinder.ClientBinder, ClientsAdminBinder.FilledClientBinder>() {
 
     init {
         store.onClientsUpdated += {
@@ -65,7 +59,8 @@ class ClientsAdminBinder @Inject constructor(
         val binder = FilledClientBinder(selected.value.client)
         val ok = dialogService.confirm(
             title = "Delete Client",
-            message = """Are you sure you want to delete "$binder"? This will also delete all of the client's projects.""".trimEnd()
+            message = "Are you sure you want to delete \"$binder\"? " +
+                    "This will also delete all of the client's projects."
         )
         if (ok) {
             store.removeClient(binder.client)
@@ -75,21 +70,24 @@ class ClientsAdminBinder @Inject constructor(
 
     abstract class ClientBinder(name: String, currency: Currency) :
         EntityBinder {
+
         val name: StringProperty = SimpleStringProperty(name)
         val currency: ObjectProperty<Currency> = SimpleObjectProperty(currency)
         val maxNameLength: Int = 128
 
-        internal fun createClient(): Client = Client(name.value, currency.value)
+        internal fun createClient(): Client =
+            Client(name = name.value.trim(), currency = currency.value)
     }
 
     private inner class EmptyClientBinder :
         ClientBinder(name = "", currency = i18nService.defaultCurrency) {
+
         override val isValid: ObservableBooleanValue =
             Bindings.createBooleanBinding({
-                val name = name.value
-                val unique = !store.containsClient(name)
-                val validLength = name.length in 1..maxNameLength
-                unique && validLength
+                val name = name.value.trim()
+                val isUnique = !store.containsClient(name)
+                val isNameValid = name.isNotEmpty()
+                isUnique && isNameValid
             }, name)
 
         override fun toString(): String = name.value
@@ -97,13 +95,14 @@ class ClientsAdminBinder @Inject constructor(
 
     inner class FilledClientBinder(internal val client: Client) :
         ClientBinder(name = client.name, currency = client.currency) {
+
         override val isValid: ObservableBooleanValue =
             Bindings.createBooleanBinding({
-                val name = name.value
-                val unchanged = client.isIdentifiedBy(name)
-                val unique = !store.containsClient(name)
-                val validLength = name.length in 1..maxNameLength
-                (unchanged || unique) && validLength
+                val name = name.value.trim()
+                val isUnchanged = client.isIdentifiedBy(name)
+                val isUnique = !store.containsClient(name)
+                val isNameValid = name.isNotEmpty()
+                (isUnchanged || isUnique) && isNameValid
             }, name)
 
         override fun toString(): String = client.name
