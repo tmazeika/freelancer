@@ -1,17 +1,21 @@
 package me.mazeika.freelancer.view.admin
 
-import javafx.beans.binding.Bindings
+import javafx.beans.property.SimpleObjectProperty
 import javafx.geometry.Pos
-import javafx.scene.Node
+import javafx.scene.layout.BorderPane
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
+import javafx.scene.paint.Color
 import javafx.scene.shape.Circle
 import javafx.scene.text.Text
 import javafx.scene.text.TextFlow
 import me.mazeika.freelancer.binder.admin.ProjectsAdminBinder
 import me.mazeika.freelancer.binder.i18n.I18nService
-import me.mazeika.freelancer.view.components.EntityForm
+import me.mazeika.freelancer.binder.util.bind
+import me.mazeika.freelancer.binder.util.map
+import me.mazeika.freelancer.view.components.GraphicCellFactory
+import me.mazeika.freelancer.view.components.forms.*
 import me.mazeika.freelancer.view.services.ColorService
 import me.mazeika.freelancer.view.util.BidiBindings
 import me.mazeika.freelancer.view.util.ColorIndexBidiConverter
@@ -21,77 +25,78 @@ import javax.inject.Inject
 class ProjectsAdminView @Inject constructor(
     vm: ProjectsAdminBinder,
     private val colorService: ColorService,
-    private val i18nService: I18nService
-) :
-    EntityAdminView<ProjectsAdminBinder.ProjectBinder, ProjectsAdminBinder.FilledProjectBinder>(
-        vm
-    ) {
-    override fun createEntityView(vm: ProjectsAdminBinder.ProjectBinder): Node =
-        EntityForm(
-            EntityForm.ComboInput(
-                name = "Client",
-                value = vm.clientName,
-                options = vm.clientNames
-            ),
-            EntityForm.TextInput(
-                name = "Name",
-                value = vm.name,
-                maxLength = vm.maxNameLength,
-            ),
-            EntityForm.ColorComboInput(
-                name = "Color",
-                value = BidiBindings.createProperty(
-                    vm.colorIndex,
-                    ColorIndexBidiConverter(colorService.colors)
+    private val i18nService: I18nService,
+) : BorderPane() {
+    init {
+        top = EntityAdminActionBar(vm) { project ->
+            GridForm(
+                OptionsFormComponent(
+                    label = "Client",
+                    value = project.clientName,
+                    options = project.clientNames.toList()
                 ),
-                options = colorService.colors,
-            ),
-            EntityForm.NonNegativeDecimalInput(
-                name = "Hourly Rate",
-                value = vm.hourlyRate
-            ),
-            EntityForm.ComboInput(
-                name = "Currency",
-                value = vm.currency,
-                options = i18nService.availableCurrencies,
+                TextFormComponent(
+                    label = "Name",
+                    value = project.name,
+                    maxLength = project.maxNameLength
+                ),
+                ColorOptionsFormComponent(
+                    label = "Color",
+                    value = SimpleObjectProperty<Color>().apply {
+                        BidiBindings.bind(
+                            this,
+                            project.colorIndex,
+                            ColorIndexBidiConverter(colorService.colors)
+                        )
+                    },
+                    options = colorService.colors
+                ),
+                NonNegativeDecimalFormComponent(
+                    label = "Hourly Rate",
+                    value = project.hourlyRate
+                ),
+                OptionsFormComponent(
+                    label = "Currency",
+                    value = project.currency,
+                    options = i18nService.availableCurrencies
+                ),
             )
-        )
-
-    override fun createListCell(item: ProjectsAdminBinder.ProjectBinder): Node =
-        HBox().apply {
-            alignment = Pos.CENTER_LEFT
-            spacing = 10.0
-            val circle = Circle(5.0).apply {
-                fillProperty().bind(
-                    Bindings.createObjectBinding(
-                        { colorService.colors[item.colorIndex.value] },
-                        item.colorIndex
-                    )
+        }
+        center = EntityAdminList(vm, GraphicCellFactory { project ->
+            HBox().apply {
+                alignment = Pos.CENTER_LEFT
+                spacing = 10.0
+                val rateText = bind({ hourlyRate, currency ->
+                    i18nService.formatMoney(hourlyRate, currency) + "/hr"
+                }, project.hourlyRate, project.currency)
+                children.setAll(
+                    Circle(5.0).apply {
+                        fillProperty().bind(project.colorIndex.map { i ->
+                            colorService.colors[i.toInt()]
+                        })
+                    },
+                    TextFlow(
+                        Text().apply {
+                            textProperty().bind(project.name)
+                        },
+                        Text("\n"),
+                        Text().apply {
+                            styleClass += "muted-text"
+                            textProperty().bind(project.clientName)
+                        }
+                    ),
+                    Pane().apply {
+                        HBox.setHgrow(this, Priority.ALWAYS)
+                    },
+                    Text().apply {
+                        visibleProperty().bind(project.hourlyRate.map {
+                            it != BigDecimal.ZERO
+                        })
+                        textProperty().bind(rateText)
+                    },
                 )
             }
-            val text = TextFlow(
-                Text().apply {
-                   textProperty().bind(item.name)
-                },
-                Text("\n"),
-                Text().apply {
-                    styleClass += "muted-text"
-                    textProperty().bind(item.clientName)
-                }
-            )
-            val spacer = Pane()
-            HBox.setHgrow(spacer, Priority.ALWAYS)
-            val rateText = Text().apply {
-                visibleProperty().bind(Bindings.createBooleanBinding({
-                    item.hourlyRate.value != BigDecimal.ZERO
-                }, item.hourlyRate))
-                textProperty().bind(Bindings.createStringBinding({
-                    val hourlyRate = item.hourlyRate.value
-                    val currency = item.currency.value
-                    i18nService.formatMoney(hourlyRate, currency) + "/hr"
-                }, item.hourlyRate, item.currency))
-            }
-            children.addAll(circle, text, spacer, rateText)
-        }
+        })
+    }
 }
 

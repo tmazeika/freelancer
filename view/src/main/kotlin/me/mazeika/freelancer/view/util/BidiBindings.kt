@@ -1,33 +1,27 @@
 package me.mazeika.freelancer.view.util
 
 import javafx.beans.property.Property
-import javafx.beans.property.SimpleObjectProperty
 
 object BidiBindings {
     fun <A, B> bind(
         a: Property<A>,
         b: Property<B>,
-        converter: Converter<A, B>
+        to: (A) -> B,
+        from: (B) -> A,
     ) {
-        a.value = converter.bToA(b.value)
-        a.addListener { _, _, new ->
-            b.value = converter.aToB(new)
-        }
-        b.addListener { _, _, new ->
-            a.value = converter.bToA(new)
-        }
+        a.value = from(b.value)
+        a.addListener { _, _, a2 -> b.value = to(a2) }
+        b.addListener { _, _, b2 -> a.value = from(b2) }
     }
 
-    fun <A, B> createProperty(
+    fun <A, B> bind(
+        a: Property<A>,
         b: Property<B>,
-        converter: Converter<A, B>
-    ): Property<A> = SimpleObjectProperty<A>().also { a ->
-        bind(a, b, converter)
-    }
+        converter: Converter<A, B>,
+    ) = bind(a, b, converter::to, converter::from)
 
     interface Converter<A, B> {
-        fun aToB(a: A): B
-
-        fun bToA(b: B): A
+        fun to(a: A): B
+        fun from(b: B): A
     }
 }

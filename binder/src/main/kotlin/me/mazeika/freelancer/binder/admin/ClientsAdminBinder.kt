@@ -1,11 +1,11 @@
 package me.mazeika.freelancer.binder.admin
 
 import javafx.beans.binding.Bindings
-import javafx.beans.property.ObjectProperty
-import javafx.beans.property.SimpleObjectProperty
-import javafx.beans.property.SimpleStringProperty
-import javafx.beans.property.StringProperty
+import javafx.beans.property.*
 import javafx.beans.value.ObservableBooleanValue
+import javafx.collections.FXCollections
+import javafx.collections.ObservableList
+import javafx.scene.Node
 import me.mazeika.freelancer.binder.i18n.I18nService
 import me.mazeika.freelancer.binder.services.DialogService
 import me.mazeika.freelancer.model.Client
@@ -15,42 +15,66 @@ import javax.inject.Inject
 
 class ClientsAdminBinder @Inject constructor(
     private val store: Store,
+    private val dialogService: DialogService,
     private val i18nService: I18nService,
-    dialogService: DialogService,
-) : EntityAdminBinder<ClientsAdminBinder.ClientBinder, ClientsAdminBinder.FilledClientBinder>(
-    entityName = "Client",
-    dialogService
-) {
+) : EntityActionHandler<ClientsAdminBinder.ClientBinder>,
+    EntityAdmin<ClientsAdminBinder.FilledClientBinder> {
+
+    override val entities: ObservableList<FilledClientBinder> =
+        FXCollections.observableArrayList()
+    override val selected: ObjectProperty<FilledClientBinder> =
+        SimpleObjectProperty()
+    override val isEditDeleteVisible: BooleanProperty = SimpleBooleanProperty()
+
     init {
         store.onClientsUpdated += {
             entities.setAll(store.getClients().map(::FilledClientBinder))
         }
     }
 
-    override fun createEmptyBinder(): ClientBinder = EmptyClientBinder()
-
-    override fun copyFilledBinder(binder: FilledClientBinder): FilledClientBinder =
-        FilledClientBinder(binder.client)
-
-    override fun create(binder: ClientBinder) {
-        store.addClient(binder.createClient())
-    }
-
-    override fun edit(binder: FilledClientBinder) {
-        store.replaceClient(
-            old = binder.client,
-            new = binder.createClient()
+    override fun onCreate(dialogViewFactory: (ClientBinder) -> Node): Boolean {
+        val binder = EmptyClientBinder()
+        val ok = dialogService.prompt(
+            title = "Create Client",
+            content = dialogViewFactory(binder),
+            isValid = binder.isValid
         )
+        if (ok) {
+            store.addClient(binder.createClient())
+        }
+        return ok
     }
 
-    override fun delete(binder: FilledClientBinder) {
-        store.removeClient(binder.client)
+    override fun onEdit(dialogViewFactory: (ClientBinder) -> Node): Boolean {
+        val binder = FilledClientBinder(selected.value.client)
+        val ok = dialogService.prompt(
+            title = "Edit Client",
+            content = dialogViewFactory(binder),
+            isValid = binder.isValid
+        )
+        if (ok) {
+            store.replaceClient(
+                old = binder.client,
+                new = binder.createClient()
+            )
+        }
+        return ok
     }
 
-    override val extraDeleteMessage: String =
-        "This will also delete all of the client's projects."
+    override fun onDelete(): Boolean {
+        val binder = FilledClientBinder(selected.value.client)
+        val ok = dialogService.confirm(
+            title = "Delete Client",
+            message = """Are you sure you want to delete "$binder"? This will also delete all of the client's projects.""".trimEnd()
+        )
+        if (ok) {
+            store.removeClient(binder.client)
+        }
+        return ok
+    }
 
-    abstract class ClientBinder(name: String, currency: Currency) : EntityBinder {
+    abstract class ClientBinder(name: String, currency: Currency) :
+        EntityBinder {
         val name: StringProperty = SimpleStringProperty(name)
         val currency: ObjectProperty<Currency> = SimpleObjectProperty(currency)
         val maxNameLength: Int = 128
@@ -58,7 +82,8 @@ class ClientsAdminBinder @Inject constructor(
         internal fun createClient(): Client = Client(name.value, currency.value)
     }
 
-    private inner class EmptyClientBinder : ClientBinder(name = "", currency = i18nService.defaultCurrency) {
+    private inner class EmptyClientBinder :
+        ClientBinder(name = "", currency = i18nService.defaultCurrency) {
         override val isValid: ObservableBooleanValue =
             Bindings.createBooleanBinding({
                 val name = name.value

@@ -5,6 +5,7 @@ import javafx.beans.property.*
 import javafx.beans.value.ObservableBooleanValue
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
+import javafx.scene.Node
 import me.mazeika.freelancer.binder.i18n.I18nService
 import me.mazeika.freelancer.binder.services.DialogService
 import me.mazeika.freelancer.model.Client
@@ -16,12 +17,17 @@ import javax.inject.Inject
 
 class ProjectsAdminBinder @Inject constructor(
     private val store: Store,
+    private val dialogService: DialogService,
     private val i18nService: I18nService,
-    dialogService: DialogService
-) : EntityAdminBinder<ProjectsAdminBinder.ProjectBinder, ProjectsAdminBinder.FilledProjectBinder>(
-    entityName = "Project",
-    dialogService
-) {
+) : EntityActionHandler<ProjectsAdminBinder.ProjectBinder>,
+    EntityAdmin<ProjectsAdminBinder.FilledProjectBinder> {
+
+    override val entities: ObservableList<FilledProjectBinder> =
+        FXCollections.observableArrayList()
+    override val selected: ObjectProperty<FilledProjectBinder> =
+        SimpleObjectProperty()
+    override val isEditDeleteVisible: BooleanProperty = SimpleBooleanProperty()
+
     private val clientNames: ObservableList<String> =
         FXCollections.observableArrayList()
 
@@ -34,24 +40,45 @@ class ProjectsAdminBinder @Inject constructor(
         }
     }
 
-    override fun createEmptyBinder(): ProjectBinder = EmptyProjectBinder()
-
-    override fun copyFilledBinder(binder: FilledProjectBinder): FilledProjectBinder =
-        FilledProjectBinder(binder.project)
-
-    override fun create(binder: ProjectBinder) {
-        store.addProject(binder.createProject())
-    }
-
-    override fun edit(binder: FilledProjectBinder) {
-        store.replaceProject(
-            old = binder.project,
-            new = binder.createProject()
+    override fun onCreate(dialogViewFactory: (ProjectBinder) -> Node): Boolean {
+        val binder = EmptyProjectBinder()
+        val ok = dialogService.prompt(
+            title = "Create Project",
+            content = dialogViewFactory(binder),
+            isValid = binder.isValid
         )
+        if (ok) {
+            store.addProject(binder.createProject())
+        }
+        return ok
     }
 
-    override fun delete(binder: FilledProjectBinder) {
-        store.removeProject(binder.project)
+    override fun onEdit(dialogViewFactory: (ProjectBinder) -> Node): Boolean {
+        val binder = FilledProjectBinder(selected.value.project)
+        val ok = dialogService.prompt(
+            title = "Edit Client",
+            content = dialogViewFactory(binder),
+            isValid = binder.isValid
+        )
+        if (ok) {
+            store.replaceProject(
+                old = binder.project,
+                new = binder.createProject()
+            )
+        }
+        return ok
+    }
+
+    override fun onDelete(): Boolean {
+        val binder = FilledProjectBinder(selected.value.project)
+        val ok = dialogService.confirm(
+            title = "Delete Client",
+            message = """Are you sure you want to delete "$binder"?""".trimEnd()
+        )
+        if (ok) {
+            store.removeProject(binder.project)
+        }
+        return ok
     }
 
     abstract inner class ProjectBinder(
@@ -59,7 +86,7 @@ class ProjectsAdminBinder @Inject constructor(
         name: String,
         colorIndex: Int,
         hourlyRate: BigDecimal,
-        currency: Currency
+        currency: Currency,
     ) : EntityBinder {
         val clientNames: ObservableList<String> =
             FXCollections.unmodifiableObservableList(this@ProjectsAdminBinder.clientNames)

@@ -17,12 +17,12 @@ class NonNegativeDecimalTextFormatter :
     class Filter : UnaryOperator<Change?> {
         override fun apply(change: Change?): Change? {
             val text = change!!.controlNewText
-            val valid = filterPattern.matcher(text).matches()
-            return if (valid) change else null
+            val isInvalid = !filterPattern.matcher(text).matches()
+            return if (isInvalid) null else change
         }
     }
 
     companion object {
-        private val filterPattern: Pattern = Pattern.compile("[0-9]*\\.?[0-9]*")
+        private val filterPattern = Pattern.compile("[0-9]*\\.?[0-9]*")
     }
 }

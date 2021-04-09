@@ -1,20 +1,22 @@
 package me.mazeika.freelancer.view.admin
 
-import javafx.scene.Node
+import javafx.scene.layout.BorderPane
 import me.mazeika.freelancer.binder.admin.TagsAdminBinder
-import me.mazeika.freelancer.view.components.EntityForm
+import me.mazeika.freelancer.view.components.forms.GridForm
+import me.mazeika.freelancer.view.components.forms.TextFormComponent
 import javax.inject.Inject
 
-class TagsAdminView @Inject constructor(vm: TagsAdminBinder) :
-    EntityAdminView<TagsAdminBinder.TagBinder, TagsAdminBinder.FilledTagBinder>(
-        vm
-    ) {
-    override fun createEntityView(vm: TagsAdminBinder.TagBinder): Node =
-        EntityForm(
-            EntityForm.TextInput(
-                name = "Name",
-                value = vm.name,
-                maxLength = vm.maxNameLength
+class TagsAdminView @Inject constructor(vm: TagsAdminBinder) : BorderPane() {
+    init {
+        top = EntityAdminActionBar(vm) { tag ->
+            GridForm(
+                TextFormComponent(
+                    label = "Name",
+                    value = tag.name,
+                    maxLength = tag.maxNameLength
+                )
             )
-        )
+        }
+        center = EntityAdminList(vm)
+    }
 }

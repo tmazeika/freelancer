@@ -23,6 +23,7 @@ subprojects {
         val testRuntimeOnly by configurations
 
         implementation("com.google.inject:guice:5.0.1")
+        implementation("com.google.inject.extensions:guice-assistedinject:5.0.1")
         implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.3")
 
         testImplementation(kotlin("test-junit5"))

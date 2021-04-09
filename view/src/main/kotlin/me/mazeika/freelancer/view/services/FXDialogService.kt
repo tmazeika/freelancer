@@ -33,14 +33,15 @@ class FXDialogService : DialogService {
     override fun prompt(
         title: String,
         content: Node,
-        isValid: ObservableBooleanValue
+        isValid: ObservableBooleanValue,
     ): Boolean =
         Alert(Alert.AlertType.NONE).let {
             it.title = title
             it.dialogPane.content = content
             it.buttonTypes.setAll(ButtonType.CANCEL, ButtonType.OK)
-            val okBtn = it.dialogPane.lookupButton(ButtonType.OK) as Button
-            okBtn.disableProperty().bind(Bindings.not(isValid))
+            (it.dialogPane.lookupButton(ButtonType.OK) as Button).apply {
+                disableProperty().bind(Bindings.not(isValid))
+            }
             it.showAndWait()
         }.map { it == ButtonType.OK }.orElse(false)
 
@@ -48,7 +49,7 @@ class FXDialogService : DialogService {
         type: Alert.AlertType,
         title: String,
         message: String,
-        vararg buttonTypes: ButtonType
+        vararg buttonTypes: ButtonType,
     ) = Alert(type, message).let {
         it.title = title
         it.headerText = null

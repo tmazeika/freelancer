@@ -1,9 +1,11 @@
 package me.mazeika.freelancer.binder.admin
 
 import javafx.beans.binding.Bindings
-import javafx.beans.property.SimpleStringProperty
-import javafx.beans.property.StringProperty
+import javafx.beans.property.*
 import javafx.beans.value.ObservableBooleanValue
+import javafx.collections.FXCollections
+import javafx.collections.ObservableList
+import javafx.scene.Node
 import me.mazeika.freelancer.binder.services.DialogService
 import me.mazeika.freelancer.model.Store
 import me.mazeika.freelancer.model.Tag
@@ -11,32 +13,58 @@ import javax.inject.Inject
 
 class TagsAdminBinder @Inject constructor(
     private val store: Store,
-    dialogService: DialogService,
-) : EntityAdminBinder<TagsAdminBinder.TagBinder, TagsAdminBinder.FilledTagBinder>(
-    entityName = "Tag",
-    dialogService
-) {
+    private val dialogService: DialogService,
+) : EntityActionHandler<TagsAdminBinder.TagBinder>,
+    EntityAdmin<TagsAdminBinder.FilledTagBinder> {
+
+    override val entities: ObservableList<FilledTagBinder> =
+        FXCollections.observableArrayList()
+    override val selected: ObjectProperty<FilledTagBinder> =
+        SimpleObjectProperty()
+    override val isEditDeleteVisible: BooleanProperty = SimpleBooleanProperty()
+
     init {
         store.onTagsUpdated += {
             entities.setAll(store.getTags().map(::FilledTagBinder))
         }
     }
 
-    override fun createEmptyBinder(): TagBinder = EmptyTagBinder()
-
-    override fun copyFilledBinder(binder: FilledTagBinder): FilledTagBinder =
-        FilledTagBinder(binder.tag)
-
-    override fun create(binder: TagBinder) {
-        store.addTag(binder.createTag())
+    override fun onCreate(dialogViewFactory: (TagBinder) -> Node): Boolean {
+        val binder = EmptyTagBinder()
+        val ok = dialogService.prompt(
+            title = "Create Tag",
+            content = dialogViewFactory(binder),
+            isValid = binder.isValid
+        )
+        if (ok) {
+            store.addTag(binder.createTag())
+        }
+        return ok
     }
 
-    override fun edit(binder: FilledTagBinder) {
-        store.replaceTag(old = binder.tag, new = binder.createTag())
+    override fun onEdit(dialogViewFactory: (TagBinder) -> Node): Boolean {
+        val binder = FilledTagBinder(selected.value.tag)
+        val ok = dialogService.prompt(
+            title = "Edit Tag",
+            content = dialogViewFactory(binder),
+            isValid = binder.isValid
+        )
+        if (ok) {
+            store.replaceTag(old = binder.tag, new = binder.createTag())
+        }
+        return ok
     }
 
-    override fun delete(binder: FilledTagBinder) {
-        store.removeTag(binder.tag)
+    override fun onDelete(): Boolean {
+        val binder = FilledTagBinder(selected.value.tag)
+        val ok = dialogService.confirm(
+            title = "Delete Tag",
+            message = """Are you sure you want to delete "$binder"?""".trimEnd()
+        )
+        if (ok) {
+            store.removeTag(binder.tag)
+        }
+        return ok
     }
 
     abstract class TagBinder(name: String) : EntityBinder {
@@ -58,7 +86,8 @@ class TagsAdminBinder @Inject constructor(
         override fun toString(): String = name.value
     }
 
-    inner class FilledTagBinder(internal val tag: Tag) : TagBinder(name = tag.name) {
+    inner class FilledTagBinder(internal val tag: Tag) :
+        TagBinder(name = tag.name) {
         override val isValid: ObservableBooleanValue =
             Bindings.createBooleanBinding({
                 val name = name.value
