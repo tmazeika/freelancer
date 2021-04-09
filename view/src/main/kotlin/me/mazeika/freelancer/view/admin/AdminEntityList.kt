@@ -2,17 +2,17 @@ package me.mazeika.freelancer.view.admin
 
 import javafx.scene.control.ListCell
 import javafx.scene.control.ListView
-import me.mazeika.freelancer.binder.admin.EntityAdmin
+import me.mazeika.freelancer.binder.admin.EntityListBinder
 import me.mazeika.freelancer.binder.util.bindContent
 
 class AdminEntityList<T>(
-    vm: EntityAdmin<T>,
-    createCell: (() -> ListCell<T>)? = null
+    vm: EntityListBinder<T>,
+    createCellFactory: (() -> ListCell<T>)? = null
 ) : ListView<T>() {
 
     init {
-        if (createCell != null) {
-            setCellFactory { createCell() }
+        if (createCellFactory != null) {
+            setCellFactory { createCellFactory() }
         }
         items.bindContent(vm.entities)
         vm.selected.bind(selectionModel.selectedItemProperty())

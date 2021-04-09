@@ -68,8 +68,7 @@ class ClientsAdminBinder @Inject constructor(
         return ok
     }
 
-    abstract class ClientBinder(name: String, currency: Currency) :
-        EntityBinder {
+    abstract class ClientBinder(name: String, currency: Currency) {
 
         val name: StringProperty = SimpleStringProperty(name)
         val currency: ObjectProperty<Currency> = SimpleObjectProperty(currency)
@@ -82,7 +81,7 @@ class ClientsAdminBinder @Inject constructor(
     private inner class EmptyClientBinder :
         ClientBinder(name = "", currency = i18nService.defaultCurrency) {
 
-        override val isValid: ObservableBooleanValue =
+        val isValid: ObservableBooleanValue =
             Bindings.createBooleanBinding({
                 val name = name.value.trim()
                 val isUnique = !store.containsClient(name)
@@ -96,7 +95,7 @@ class ClientsAdminBinder @Inject constructor(
     inner class FilledClientBinder(internal val client: Client) :
         ClientBinder(name = client.name, currency = client.currency) {
 
-        override val isValid: ObservableBooleanValue =
+        val isValid: ObservableBooleanValue =
             Bindings.createBooleanBinding({
                 val name = name.value.trim()
                 val isUnchanged = client.isIdentifiedBy(name)

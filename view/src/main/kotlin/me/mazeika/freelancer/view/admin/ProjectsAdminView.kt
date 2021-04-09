@@ -71,7 +71,7 @@ class ProjectsAdminView @Inject constructor(
                     children.setAll(
                         Circle(5.0).apply {
                             fillProperty().bind(project.colorIndex.map { i ->
-                                colorService.colors[i.toInt()]
+                                colorService.colors[i]
                             })
                         },
                         TextFlow(

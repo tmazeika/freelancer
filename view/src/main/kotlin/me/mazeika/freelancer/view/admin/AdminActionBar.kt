@@ -4,10 +4,10 @@ import javafx.geometry.Insets
 import javafx.scene.Node
 import javafx.scene.control.Button
 import javafx.scene.layout.FlowPane
-import me.mazeika.freelancer.binder.admin.EntityActionHandler
+import me.mazeika.freelancer.binder.admin.EntityActionBinder
 
 class AdminActionBar<T>(
-    vm: EntityActionHandler<T>,
+    vm: EntityActionBinder<T>,
     createDialogView: (T) -> Node
 ) : FlowPane() {
 

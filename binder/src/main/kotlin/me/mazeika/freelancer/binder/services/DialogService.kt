@@ -1,7 +1,7 @@
 package me.mazeika.freelancer.binder.services
 
 import javafx.beans.property.SimpleBooleanProperty
-import javafx.beans.value.ObservableBooleanValue
+import javafx.beans.value.ObservableValue
 import javafx.scene.Node
 
 interface DialogService {
@@ -37,6 +37,6 @@ interface DialogService {
     fun prompt(
         title: String,
         content: Node,
-        isValid: ObservableBooleanValue = SimpleBooleanProperty(true)
+        isValid: ObservableValue<Boolean> = SimpleBooleanProperty(true)
     ): Boolean
 }

@@ -83,7 +83,7 @@ class ProjectsAdminBinder @Inject constructor(
         colorIndex: Int,
         hourlyRate: BigDecimal,
         currency: Currency
-    ) : EntityBinder {
+    ) {
 
         val clientNames: ObservableList<String> =
             FXCollections.unmodifiableObservableList(_clientNames)
@@ -113,7 +113,7 @@ class ProjectsAdminBinder @Inject constructor(
         currency = i18nService.defaultCurrency
     ) {
 
-        override val isValid: ObservableBooleanValue =
+        val isValid: ObservableBooleanValue =
             Bindings.createBooleanBinding({
                 val clientName = clientName.value
                 val name = name.value.trim()
@@ -134,7 +134,7 @@ class ProjectsAdminBinder @Inject constructor(
             currency = project.currency
         ) {
 
-        override val isValid: ObservableBooleanValue =
+        val isValid: ObservableBooleanValue =
             Bindings.createBooleanBinding({
                 val clientName = clientName.value
                 val name = name.value.trim()

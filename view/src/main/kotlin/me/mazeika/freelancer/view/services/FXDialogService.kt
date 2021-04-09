@@ -1,12 +1,12 @@
 package me.mazeika.freelancer.view.services
 
-import javafx.beans.binding.Bindings
-import javafx.beans.value.ObservableBooleanValue
+import javafx.beans.value.ObservableValue
 import javafx.scene.Node
 import javafx.scene.control.Alert
 import javafx.scene.control.Button
 import javafx.scene.control.ButtonType
 import me.mazeika.freelancer.binder.services.DialogService
+import me.mazeika.freelancer.binder.util.not
 
 class FXDialogService : DialogService {
 
@@ -34,14 +34,14 @@ class FXDialogService : DialogService {
     override fun prompt(
         title: String,
         content: Node,
-        isValid: ObservableBooleanValue
+        isValid: ObservableValue<Boolean>
     ): Boolean =
         Alert(Alert.AlertType.NONE).let {
             it.title = title
             it.dialogPane.content = content
             it.buttonTypes.setAll(ButtonType.CANCEL, ButtonType.OK)
             (it.dialogPane.lookupButton(ButtonType.OK) as Button).apply {
-                disableProperty().bind(Bindings.not(isValid))
+                disableProperty().bind(!isValid)
             }
             it.showAndWait()
         }.map { it == ButtonType.OK }.orElse(false)

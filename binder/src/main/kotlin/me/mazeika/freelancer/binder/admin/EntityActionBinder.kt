@@ -3,7 +3,7 @@ package me.mazeika.freelancer.binder.admin
 import javafx.beans.property.BooleanProperty
 import javafx.scene.Node
 
-interface EntityActionHandler<out T> {
+interface EntityActionBinder<out T> {
 
     val isEditDeleteVisible: BooleanProperty
 

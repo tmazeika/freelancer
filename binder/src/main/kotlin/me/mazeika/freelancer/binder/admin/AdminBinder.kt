@@ -7,8 +7,8 @@ import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 
-abstract class AdminBinder<out EB, FilledEB> : EntityActionHandler<EB>,
-    EntityAdmin<FilledEB> {
+abstract class AdminBinder<out EB, FilledEB> : EntityActionBinder<EB>,
+    EntityListBinder<FilledEB> {
 
     override val entities: ObservableList<FilledEB> =
         FXCollections.observableArrayList()

@@ -59,7 +59,7 @@ class TagsAdminBinder @Inject constructor(
         return ok
     }
 
-    abstract class TagBinder(name: String) : EntityBinder {
+    abstract class TagBinder(name: String) {
 
         val name: StringProperty = SimpleStringProperty(name)
         val maxNameLength: Int = 32
@@ -69,7 +69,7 @@ class TagsAdminBinder @Inject constructor(
 
     private inner class EmptyTagBinder : TagBinder(name = "") {
 
-        override val isValid: ObservableBooleanValue =
+        val isValid: ObservableBooleanValue =
             Bindings.createBooleanBinding({
                 val name = name.value.trim()
                 val isUnique = !store.containsTag(name)
@@ -83,7 +83,7 @@ class TagsAdminBinder @Inject constructor(
     inner class FilledTagBinder(internal val tag: Tag) :
         TagBinder(name = tag.name) {
 
-        override val isValid: ObservableBooleanValue =
+        val isValid: ObservableBooleanValue =
             Bindings.createBooleanBinding({
                 val name = name.value.trim()
                 val isUnchanged = tag.isIdentifiedBy(name)
