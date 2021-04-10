@@ -1,2 +1,2 @@
 rootProject.name = "freelancer"
-include("binder", "view", "model")
+include("binder", "model", "view")

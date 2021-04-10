@@ -12,7 +12,7 @@ data class Project(
 ) : Comparable<Project> {
 
     init {
-        require(name.isNotBlank() && name.length in 1..128)
+        require(name == name.trim() && name.length in 1..128)
         require(colorIndex >= 0)
         require(hourlyRate >= BigDecimal.ZERO)
     }

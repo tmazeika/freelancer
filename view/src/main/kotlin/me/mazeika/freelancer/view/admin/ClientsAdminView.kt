@@ -3,6 +3,7 @@ package me.mazeika.freelancer.view.admin
 import javafx.scene.layout.BorderPane
 import me.mazeika.freelancer.binder.admin.ClientsAdminBinder
 import me.mazeika.freelancer.binder.i18n.I18nService
+import me.mazeika.freelancer.view.components.TextCellFactory
 import me.mazeika.freelancer.view.components.forms.GridForm
 import me.mazeika.freelancer.view.components.forms.OptionsFormComponent
 import me.mazeika.freelancer.view.components.forms.TextFormComponent
@@ -28,6 +29,6 @@ class ClientsAdminView @Inject constructor(
                 )
             )
         }
-        center = AdminEntityList(vm)
+        center = AdminEntityList(vm) { TextCellFactory { it.name.value } }
     }
 }

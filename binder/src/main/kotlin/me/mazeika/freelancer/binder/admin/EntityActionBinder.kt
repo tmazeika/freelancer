@@ -5,6 +5,7 @@ import javafx.scene.Node
 
 interface EntityActionBinder<out T> {
 
+    val isCreateVisible: BooleanProperty
     val isEditDeleteVisible: BooleanProperty
 
     fun onCreate(dialogViewFactory: (T) -> Node): Boolean

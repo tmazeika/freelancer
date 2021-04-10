@@ -11,16 +11,20 @@ class Store {
     private val clients: MutableList<Client> = mutableListOf()
     private val projects: MutableList<Project> = mutableListOf()
     private val tags: MutableList<Tag> = mutableListOf()
+    private val lineItems: MutableList<LineItem> = mutableListOf()
 
     val onClientsUpdated: Notifier = Notifier()
     val onProjectsUpdated: Notifier = Notifier()
     val onTagsUpdated: Notifier = Notifier()
+    val onLineItemsUpdated: Notifier = Notifier()
 
     fun getClients(): List<Client> = clients
 
     fun getProjects(): List<Project> = projects
 
     fun getTags(): List<Tag> = tags
+
+    fun getLineItems(): List<LineItem> = lineItems
 
     fun getClient(name: String): Client =
         clients.first { it.name.equals(name, ignoreCase = true) }
@@ -56,7 +60,6 @@ class Store {
     }
 
     fun addProject(project: Project) {
-        clients.ensureAddedSorted(project.client)
         projects.addSorted(project, unique = true)
         onProjectsUpdated()
     }
@@ -66,26 +69,37 @@ class Store {
         onTagsUpdated()
     }
 
+    fun addLineItem(lineItem: LineItem) {
+        lineItems.addSorted(lineItem, unique = true)
+        onLineItemsUpdated()
+    }
+
     fun replaceClient(old: Client, new: Client) {
         projects.replaceAll {
             if (it.client == old) it.copy(client = new) else it
         }
         clients.removeSorted(old)
-        clients.addSorted(new)
+        clients.addSorted(new, unique = true)
         onProjectsUpdated()
         onClientsUpdated()
     }
 
     fun replaceProject(old: Project, new: Project) {
         projects.removeSorted(old)
-        projects.addSorted(new)
+        projects.addSorted(new, unique = true)
         onProjectsUpdated()
     }
 
     fun replaceTag(old: Tag, new: Tag) {
         tags.removeSorted(old)
-        tags.addSorted(new)
+        tags.addSorted(new, unique = true)
         onTagsUpdated()
+    }
+
+    fun replaceLineItem(old: LineItem, new: LineItem) {
+        lineItems.removeSorted(old)
+        lineItems.addSorted(new, unique = true)
+        onLineItemsUpdated()
     }
 
     fun removeClient(client: Client) {
@@ -105,6 +119,11 @@ class Store {
         onTagsUpdated()
     }
 
+    fun removeLineItem(lineItem: LineItem) {
+        lineItems.removeSorted(lineItem)
+        onLineItemsUpdated()
+    }
+
     private fun <T> MutableList<T>.addSorted(
         e: T,
         unique: Boolean = false
@@ -112,13 +131,6 @@ class Store {
         val i = Collections.binarySearch(this, e)
         require(!unique || i < 0)
         this.add(max(-i - 1, 0), e)
-    }
-
-    private fun <T> MutableList<T>.ensureAddedSorted(e: T) where T : Comparable<T> {
-        val i = Collections.binarySearch(this, e)
-        if (i < 0) {
-            this.add(max(-i - 1, 0), e)
-        }
     }
 
     private fun <T> MutableList<T>.removeSorted(e: T) where T : Comparable<T> {

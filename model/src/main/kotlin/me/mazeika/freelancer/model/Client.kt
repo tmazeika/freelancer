@@ -6,7 +6,7 @@ data class Client(val name: String, val currency: Currency) :
     Comparable<Client> {
 
     init {
-        require(name.isNotBlank() && name.length in 1..128)
+        require(name == name.trim() && name.length in 1..128)
     }
 
     fun isIdentifiedBy(name: String): Boolean =

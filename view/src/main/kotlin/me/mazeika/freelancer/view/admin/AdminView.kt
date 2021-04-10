@@ -7,7 +7,8 @@ import javax.inject.Inject
 class AdminView @Inject constructor(
     clientsAdminView: ClientsAdminView,
     projectsAdminView: ProjectsAdminView,
-    tagsAdminView: TagsAdminView
+    tagsAdminView: TagsAdminView,
+    lineItemsAdminView: LineItemsAdminView
 ) : TabPane() {
 
     init {
@@ -15,5 +16,6 @@ class AdminView @Inject constructor(
         tabs += Tab("Clients", clientsAdminView)
         tabs += Tab("Projects", projectsAdminView)
         tabs += Tab("Tags", tagsAdminView)
+        tabs += Tab("Line Items", lineItemsAdminView)
     }
 }

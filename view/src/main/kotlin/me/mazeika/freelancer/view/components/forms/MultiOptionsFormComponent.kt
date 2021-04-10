@@ -1,24 +1,26 @@
 package me.mazeika.freelancer.view.components.forms
 
-import javafx.beans.property.Property
+import javafx.collections.ObservableList
 import javafx.scene.Node
-import javafx.scene.control.ComboBox
 import javafx.scene.control.ListCell
+import javafx.scene.control.ListView
+import javafx.scene.control.SelectionMode
+import me.mazeika.freelancer.binder.util.bindContent
 
-class OptionsFormComponent<T>(
+class MultiOptionsFormComponent<T>(
     override val label: String,
-    value: Property<T>,
+    values: ObservableList<T>,
     options: Collection<T>,
     createCell: (() -> ListCell<T>)? = null
-) : ComboBox<T>(), FormComponent {
+) : ListView<T>(), FormComponent {
 
     init {
         if (createCell != null) {
-            buttonCell = createCell()
             setCellFactory { createCell() }
         }
+        selectionModel.selectionMode = SelectionMode.MULTIPLE
         items.setAll(options)
-        valueProperty().bindBidirectional(value)
+        values.bindContent(selectionModel.selectedItems)
     }
 
     override val node: Node = this

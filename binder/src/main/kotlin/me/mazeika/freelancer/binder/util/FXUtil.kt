@@ -3,14 +3,13 @@ package me.mazeika.freelancer.binder.util
 import javafx.beans.binding.Bindings
 import javafx.beans.binding.BooleanBinding
 import javafx.beans.binding.ObjectBinding
-import javafx.beans.property.Property
 import javafx.beans.value.ObservableValue
 import javafx.collections.ObservableList
 
 fun <A, B, R> bind(
     transform: (A, B) -> R,
-    a: Property<A>,
-    b: Property<B>,
+    a: ObservableValue<A>,
+    b: ObservableValue<B>,
 ): ObjectBinding<R> =
     Bindings.createObjectBinding({ transform(a.value, b.value) }, a, b)
 

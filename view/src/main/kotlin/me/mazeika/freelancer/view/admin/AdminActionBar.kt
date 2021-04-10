@@ -18,6 +18,7 @@ class AdminActionBar<T>(
         children.setAll(
             Button("Create").apply {
                 setOnAction { vm.onCreate(createDialogView) }
+                visibleProperty().bind(vm.isCreateVisible)
             },
             Button("Edit").apply {
                 setOnAction { vm.onEdit(createDialogView) }
