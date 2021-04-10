@@ -5,9 +5,9 @@ import javafx.scene.layout.BorderPane
 import me.mazeika.freelancer.binder.admin.ProjectsAdminBinder
 import me.mazeika.freelancer.binder.i18n.I18nService
 import me.mazeika.freelancer.view.components.GraphicCellFactory
-import me.mazeika.freelancer.view.components.ProjectCellFactory
 import me.mazeika.freelancer.view.components.TextCellFactory
 import me.mazeika.freelancer.view.components.forms.*
+import me.mazeika.freelancer.view.components.project.ProjectCellFactory
 import me.mazeika.freelancer.view.services.ColorService
 import me.mazeika.freelancer.view.util.BidiBindings
 import me.mazeika.freelancer.view.util.ColorIndexConverter
@@ -55,7 +55,7 @@ class ProjectsAdminView @Inject constructor(
             )
         }
         center = AdminEntityList(vm) {
-            GraphicCellFactory(projectCellFactory::create)
+            GraphicCellFactory(projectCellFactory::createLong)
         }
     }
 }

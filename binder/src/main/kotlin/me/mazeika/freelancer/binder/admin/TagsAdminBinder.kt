@@ -11,11 +11,11 @@ import javax.inject.Inject
 class TagsAdminBinder @Inject constructor(
     private val store: Store,
     private val dialogService: DialogService
-) : AdminBinder<MutableTagBinder, TagsAdminBinder.FilledTagBinder>() {
+) : AdminBinder<MutableTagBinder, SnapshotTagBinder>() {
 
     init {
         store.onTagsUpdated += {
-            items.setAll(store.getTags().map(::FilledTagBinder))
+            items.setAll(store.getTags().map(::SnapshotTagBinder))
         }
     }
 
@@ -49,7 +49,7 @@ class TagsAdminBinder @Inject constructor(
         val binder = FilledTagBinder(selected.value.tag)
         val ok = dialogService.confirm(
             title = "Delete Tag",
-            message = "Are you sure you want to delete \"${binder.name}\"?"
+            message = "Are you sure you want to delete \"${binder.name.value}\"?"
         )
         if (ok) {
             store.removeTag(binder.tag)
@@ -68,7 +68,7 @@ class TagsAdminBinder @Inject constructor(
             }, name)
     }
 
-    inner class FilledTagBinder(internal val tag: Tag) :
+    private inner class FilledTagBinder(val tag: Tag) :
         MutableTagBinder(name = tag.name) {
 
         val isValid: ObservableBooleanValue =

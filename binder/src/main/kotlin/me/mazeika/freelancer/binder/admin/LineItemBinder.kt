@@ -47,7 +47,7 @@ abstract class MutableLineItemBinder(
 
     internal fun createLineItem(): LineItem = TimeLineItem(
         id = id,
-        name = name.value,
+        name = name.value.trim(),
         project = project.value.project,
         tags = tags.map(SnapshotTagBinder::tag),
         start = time.value,

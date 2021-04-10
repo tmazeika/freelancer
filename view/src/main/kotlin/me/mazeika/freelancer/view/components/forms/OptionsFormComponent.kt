@@ -9,12 +9,15 @@ class OptionsFormComponent<T>(
     override val label: String,
     value: Property<T>,
     options: Collection<T>,
-    createCell: (() -> ListCell<T>)? = null
+    createCell: (() -> ListCell<T>)? = null,
+    createButtonCell: (() -> ListCell<T>)? = null
 ) : ComboBox<T>(), FormComponent {
 
     init {
+        if (createButtonCell != null || createCell != null) {
+            buttonCell = (createButtonCell ?: createCell)!!()
+        }
         if (createCell != null) {
-            buttonCell = createCell()
             setCellFactory { createCell() }
         }
         items.setAll(options)

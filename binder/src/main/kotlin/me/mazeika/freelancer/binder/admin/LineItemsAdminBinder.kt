@@ -15,7 +15,7 @@ import javax.inject.Inject
 class LineItemsAdminBinder @Inject constructor(
     private val store: Store,
     private val dialogService: DialogService
-) : AdminBinder<MutableLineItemBinder, LineItemsAdminBinder.FilledLineItemBinder>() {
+) : AdminBinder<MutableLineItemBinder, SnapshotLineItemBinder>() {
 
     val allProjects: ObservableList<SnapshotProjectBinder> =
         FXCollections.observableArrayList()
@@ -31,7 +31,7 @@ class LineItemsAdminBinder @Inject constructor(
             allTags.setAll((store.getTags().map(::SnapshotTagBinder)))
         }
         store.onLineItemsUpdated += {
-            items.setAll(store.getLineItems().map(::FilledLineItemBinder))
+            items.setAll(store.getLineItems().map(::SnapshotLineItemBinder))
         }
     }
 
@@ -68,7 +68,7 @@ class LineItemsAdminBinder @Inject constructor(
         val binder = FilledLineItemBinder(selected.value.lineItem)
         val ok = dialogService.confirm(
             title = "Delete Line Item",
-            message = "Are you sure you want to delete \"${binder.name}\"?"
+            message = "Are you sure you want to delete \"${binder.name.value}\"?"
         )
         if (ok) {
             store.removeLineItem(binder.lineItem)
@@ -85,15 +85,13 @@ class LineItemsAdminBinder @Inject constructor(
     ) {
         val isValid: ObservableBooleanValue =
             Bindings.createBooleanBinding({
-//                val name = name.value.trim()
-//                val isUnique = !store.containsClient(name)
-//                val isNameValid = name.isNotEmpty()
-//                isUnique && isNameValid
-                true
+                val name = name.value.trim()
+                val isNameValid = name.isNotEmpty()
+                isNameValid
             }, name)
     }
 
-    inner class FilledLineItemBinder(internal val lineItem: LineItem) :
+    private inner class FilledLineItemBinder(val lineItem: LineItem) :
         MutableLineItemBinder(
             id = lineItem.id,
             name = lineItem.name,
@@ -104,12 +102,9 @@ class LineItemsAdminBinder @Inject constructor(
 
         val isValid: ObservableBooleanValue =
             Bindings.createBooleanBinding({
-//                val name = name.value.trim()
-//                val isUnchanged = client.isIdentifiedBy(name)
-//                val isUnique = !store.containsClient(name)
-//                val isNameValid = name.isNotEmpty()
-//                (isUnchanged || isUnique) && isNameValid
-                true
+                val name = name.value.trim()
+                val isNameValid = name.isNotEmpty()
+                isNameValid
             }, name)
     }
 }

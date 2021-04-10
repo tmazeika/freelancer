@@ -16,7 +16,7 @@ class ProjectsAdminBinder @Inject constructor(
     private val store: Store,
     private val dialogService: DialogService,
     private val i18nService: I18nService
-) : AdminBinder<MutableProjectBinder, ProjectsAdminBinder.FilledProjectBinder>() {
+) : AdminBinder<MutableProjectBinder, SnapshotProjectBinder>() {
 
     val allClients: ObservableList<SnapshotClientBinder> =
         FXCollections.observableArrayList()
@@ -27,7 +27,7 @@ class ProjectsAdminBinder @Inject constructor(
             isCreateVisible.value = store.getClients().isNotEmpty()
         }
         store.onProjectsUpdated += {
-            items.setAll(store.getProjects().map(::FilledProjectBinder))
+            items.setAll(store.getProjects().map(::SnapshotProjectBinder))
         }
     }
 
@@ -64,7 +64,7 @@ class ProjectsAdminBinder @Inject constructor(
         val binder = FilledProjectBinder(selected.value.project)
         val ok = dialogService.confirm(
             title = "Delete Client",
-            message = "Are you sure you want to delete \"${binder.name}\"?"
+            message = "Are you sure you want to delete \"${binder.name.value}\"?"
         )
         if (ok) {
             store.removeProject(binder.project)
@@ -93,7 +93,7 @@ class ProjectsAdminBinder @Inject constructor(
         override fun toString(): String = name.value
     }
 
-    inner class FilledProjectBinder(internal val project: Project) :
+    private inner class FilledProjectBinder(val project: Project) :
         MutableProjectBinder(
             client = SnapshotClientBinder(project.client),
             name = project.name,

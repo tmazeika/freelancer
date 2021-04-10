@@ -13,11 +13,11 @@ class ClientsAdminBinder @Inject constructor(
     private val store: Store,
     private val dialogService: DialogService,
     private val i18nService: I18nService
-) : AdminBinder<MutableClientBinder, ClientsAdminBinder.FilledClientBinder>() {
+) : AdminBinder<MutableClientBinder, SnapshotClientBinder>() {
 
     init {
         store.onClientsUpdated += {
-            items.setAll(store.getClients().map(::FilledClientBinder))
+            items.setAll(store.getClients().map(::SnapshotClientBinder))
         }
     }
 
@@ -54,7 +54,7 @@ class ClientsAdminBinder @Inject constructor(
         val binder = FilledClientBinder(selected.value.client)
         val ok = dialogService.confirm(
             title = "Delete Client",
-            message = "Are you sure you want to delete \"${binder.name}\"? " +
+            message = "Are you sure you want to delete \"${binder.name.value}\"? " +
                     "This will also delete all of the client's projects."
         )
         if (ok) {
@@ -78,7 +78,7 @@ class ClientsAdminBinder @Inject constructor(
             }, name)
     }
 
-    inner class FilledClientBinder(internal val client: Client) :
+    private inner class FilledClientBinder(val client: Client) :
         MutableClientBinder(name = client.name, currency = client.currency) {
 
         val isValid: ObservableBooleanValue =
