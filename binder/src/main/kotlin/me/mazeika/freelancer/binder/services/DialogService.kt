@@ -24,15 +24,15 @@ interface DialogService {
     /**
      * Asks the user to confirm something with a blocking dialog box.
      *
-     * @return True iff the user clicked OK
+     * @return True iff the user clicked OK.
      */
     fun confirm(title: String, message: String): Boolean
 
     /**
      * Prompts the user for some input with a blocking dialog box.
      *
-     * @param isValid When false, the OK button is disabled for the user
-     * @return True iff the user clicked OK and `onSubmit` last returned true
+     * @param isValid When false, the OK button is disabled for the user.
+     * @return True iff the user clicked OK and [isValid] is true.
      */
     fun prompt(
         title: String,
