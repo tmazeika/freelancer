@@ -1,13 +1,17 @@
 package me.mazeika.freelancer.binder.admin
 
+import com.google.common.collect.ImmutableSet
 import javafx.beans.binding.Bindings
 import javafx.beans.value.ObservableBooleanValue
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.scene.Node
 import me.mazeika.freelancer.binder.services.DialogService
-import me.mazeika.freelancer.model.LineItem
+import me.mazeika.freelancer.binder.util.bindContent
+import me.mazeika.freelancer.binder.util.isNotEmpty
 import me.mazeika.freelancer.model.Store
+import me.mazeika.freelancer.model.TimeLineItem
+import me.mazeika.freelancer.model.util.map
 import java.time.Instant
 import java.util.*
 import javax.inject.Inject
@@ -15,73 +19,70 @@ import javax.inject.Inject
 class LineItemsAdminBinder @Inject constructor(
     private val store: Store,
     private val dialogService: DialogService
-) : AdminBinder<MutableLineItemBinder, SnapshotLineItemBinder>() {
+) : AdminBinder<TimeLineItemBinder, TimeLineItemSnapshot>() {
 
-    val allProjects: ObservableList<SnapshotProjectBinder> =
+    val allProjects: ObservableList<ProjectSnapshot> =
         FXCollections.observableArrayList()
-    val allTags: ObservableList<SnapshotTagBinder> =
+    val allTags: ObservableList<TagSnapshot> =
         FXCollections.observableArrayList()
 
     init {
-        store.onProjectsUpdated += {
-            allProjects.setAll(store.getProjects().map(::SnapshotProjectBinder))
-            isCreateVisible.value = store.getProjects().isNotEmpty()
+        allProjects.bindContent(store.projects, ::ProjectSnapshot)
+        allTags.bindContent(store.tags, ::TagSnapshot)
+        items.bindContent(store.lineItems) {
+            TimeLineItemSnapshot(it as TimeLineItem)
         }
-        store.onTagsUpdated += {
-            allTags.setAll((store.getTags().map(::SnapshotTagBinder)))
-        }
-        store.onLineItemsUpdated += {
-            items.setAll(store.getLineItems().map(::SnapshotLineItemBinder))
-        }
+        isCreateVisible.bind(store.projects.isNotEmpty())
     }
 
-    override fun onCreate(dialogViewFactory: (MutableLineItemBinder) -> Node): Boolean {
-        val binder = EmptyLineItemBinder()
+    override fun onCreate(dialogViewFactory: (TimeLineItemBinder) -> Node): Boolean {
+        val binder = EmptyTimeLineItemBinder()
         val ok = dialogService.prompt(
-            title = "Create Line Item",
+            title = "Create Time Line Item",
             content = dialogViewFactory(binder),
             isValid = binder.isValid
         )
         if (ok) {
-            store.addLineItem(binder.createLineItem())
+            store.addLineItem(binder.createTimeLineItem())
         }
         return ok
     }
 
-    override fun onEdit(dialogViewFactory: (MutableLineItemBinder) -> Node): Boolean {
-        val binder = FilledLineItemBinder(selected.value.lineItem)
+    override fun onEdit(dialogViewFactory: (TimeLineItemBinder) -> Node): Boolean {
+        val binder = FilledTimeLineItemBinder(selected.value.timeLineItem)
         val ok = dialogService.prompt(
-            title = "Edit Line Item",
+            title = "Edit Time Line Item",
             content = dialogViewFactory(binder),
             isValid = binder.isValid
         )
         if (ok) {
             store.replaceLineItem(
-                old = binder.lineItem,
-                new = binder.createLineItem()
+                old = binder.timeLineItem,
+                new = binder.createTimeLineItem()
             )
         }
         return ok
     }
 
     override fun onDelete(): Boolean {
-        val binder = FilledLineItemBinder(selected.value.lineItem)
+        val binder = FilledTimeLineItemBinder(selected.value.timeLineItem)
         val ok = dialogService.confirm(
-            title = "Delete Line Item",
+            title = "Delete Time Line Item",
             message = "Are you sure you want to delete \"${binder.name.value}\"?"
         )
         if (ok) {
-            store.removeLineItem(binder.lineItem)
+            store.removeLineItem(binder.timeLineItem)
         }
         return ok
     }
 
-    private inner class EmptyLineItemBinder : MutableLineItemBinder(
+    private inner class EmptyTimeLineItemBinder : TimeLineItemBinder(
         id = UUID.randomUUID(),
         name = "",
-        project = SnapshotProjectBinder(store.getProjects()[0]),
-        tags = emptyList(),
-        time = Instant.now()
+        project = allProjects[0],
+        tags = ImmutableSet.of(),
+        start = Instant.now(),
+        end = null,
     ) {
         val isValid: ObservableBooleanValue =
             Bindings.createBooleanBinding({
@@ -91,15 +92,15 @@ class LineItemsAdminBinder @Inject constructor(
             }, name)
     }
 
-    private inner class FilledLineItemBinder(val lineItem: LineItem) :
-        MutableLineItemBinder(
-            id = lineItem.id,
-            name = lineItem.name,
-            project = SnapshotProjectBinder(lineItem.project),
-            tags = lineItem.tags.map(::SnapshotTagBinder),
-            time = lineItem.time
+    private inner class FilledTimeLineItemBinder(val timeLineItem: TimeLineItem) :
+        TimeLineItemBinder(
+            id = timeLineItem.id,
+            name = timeLineItem.name,
+            project = ProjectSnapshot(timeLineItem.project),
+            tags = timeLineItem.tags.map(::TagSnapshot),
+            start = timeLineItem.start,
+            end = timeLineItem.end
         ) {
-
         val isValid: ObservableBooleanValue =
             Bindings.createBooleanBinding({
                 val name = name.value.trim()

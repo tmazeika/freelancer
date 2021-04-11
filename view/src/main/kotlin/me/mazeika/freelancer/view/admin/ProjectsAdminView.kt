@@ -19,7 +19,6 @@ class ProjectsAdminView @Inject constructor(
     private val i18nService: I18nService,
     private val projectCellFactory: ProjectCellFactory,
 ) : BorderPane() {
-
     init {
         top = AdminActionBar(vm) { project ->
             GridForm(
@@ -27,7 +26,7 @@ class ProjectsAdminView @Inject constructor(
                     label = "Client",
                     value = project.client,
                     options = vm.allClients,
-                    createCell = { TextCellFactory { it.name.value } }
+                    createCell = { TextCellFactory.useToString() }
                 ),
                 TextFormComponent(
                     label = "Name",

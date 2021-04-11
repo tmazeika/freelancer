@@ -8,10 +8,8 @@ import javafx.scene.paint.Color
 import javafx.scene.shape.Circle
 import javafx.scene.text.Text
 import javafx.scene.text.TextFlow
-import me.mazeika.freelancer.binder.admin.ProjectBinder
+import me.mazeika.freelancer.binder.admin.ProjectSnapshot
 import me.mazeika.freelancer.binder.i18n.I18nService
-import me.mazeika.freelancer.binder.util.bind
-import me.mazeika.freelancer.binder.util.map
 import me.mazeika.freelancer.view.services.ColorService
 import java.math.BigDecimal
 import javax.inject.Inject
@@ -20,20 +18,15 @@ class ProjectCellComponents @Inject constructor(
     private val i18nService: I18nService,
     private val colorService: ColorService
 ) {
-    fun createIndicator(project: ProjectBinder): Node = Circle(5.0).apply {
-        fillProperty().bind(project.colorIndex.map { i ->
-            colorService.colors[i]
-        })
+    fun createIndicator(project: ProjectSnapshot): Node = Circle(5.0).apply {
+        fill = colorService.colors[project.colorIndex]
     }
 
-    fun createText(project: ProjectBinder): Node = TextFlow(
-        Text().apply {
-            textProperty().bind(project.name)
-        },
+    fun createText(project: ProjectSnapshot): Node = TextFlow(
+        Text(project.name),
         Text("\n"),
-        Text().apply {
+        Text(project.client.name).apply {
             fill = Color.GRAY
-            textProperty().bind(project.client.map { it.name.value })
         }
     )
 
@@ -41,13 +34,11 @@ class ProjectCellComponents @Inject constructor(
         HBox.setHgrow(this, Priority.ALWAYS)
     }
 
-    fun createRateText(project: ProjectBinder): Node = Text().apply {
-        val rateText = bind({ hourlyRate, currency ->
-            i18nService.formatMoney(hourlyRate, currency) + "/hr"
-        }, project.hourlyRate, project.currency)
-        visibleProperty().bind(project.hourlyRate.map {
-            it != BigDecimal.ZERO
-        })
-        textProperty().bind(rateText)
+    fun createRateText(project: ProjectSnapshot): Node = Text().apply {
+        text = i18nService.formatMoney(
+            project.hourlyRate,
+            project.currency
+        ) + "/hr"
+        isVisible = project.hourlyRate != BigDecimal.ZERO
     }
 }

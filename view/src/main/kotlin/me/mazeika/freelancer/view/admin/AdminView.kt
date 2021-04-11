@@ -10,7 +10,6 @@ class AdminView @Inject constructor(
     tagsAdminView: TagsAdminView,
     lineItemsAdminView: LineItemsAdminView
 ) : TabPane() {
-
     init {
         tabClosingPolicy = TabClosingPolicy.UNAVAILABLE
         tabs += Tab("Clients", clientsAdminView)

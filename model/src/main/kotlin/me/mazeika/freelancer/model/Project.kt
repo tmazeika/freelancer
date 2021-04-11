@@ -10,21 +10,28 @@ data class Project(
     val hourlyRate: BigDecimal,
     val currency: Currency
 ) : Comparable<Project> {
-
     init {
-        require(name == name.trim() && name.length in 1..128)
+        require(name.length in 1..128)
         require(colorIndex >= 0)
         require(hourlyRate >= BigDecimal.ZERO)
     }
 
-    fun isIdentifiedBy(clientName: String, projectName: String): Boolean {
-        val isClientNameEq = client.name.equals(clientName, ignoreCase = true)
-        val isNameEq = name.equals(projectName, ignoreCase = true)
-        return isClientNameEq && isNameEq
-    }
+    fun isIdentifiedBy(clientName: String, name: String): Boolean =
+        this.client.name.equals(clientName, ignoreCase = true)
+                && this.name.equals(name, ignoreCase = true)
 
     override fun compareTo(other: Project): Int =
         Comparator.comparing(Project::client)
             .thenComparing(Project::name, String.CASE_INSENSITIVE_ORDER)
             .compare(this, other)
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+        other as Project
+        return client == other.client
+                && name.equals(other.name, ignoreCase = true)
+    }
+
+    override fun hashCode(): Int = Objects.hash(client, name.toLowerCase())
 }

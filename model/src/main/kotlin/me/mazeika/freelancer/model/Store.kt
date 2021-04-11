@@ -1,141 +1,111 @@
 package me.mazeika.freelancer.model
 
-import me.mazeika.freelancer.model.notify.Notifier
-import java.util.*
+import javafx.collections.FXCollections
+import javafx.collections.ObservableList
+import me.mazeika.freelancer.model.util.*
 import javax.inject.Singleton
-import kotlin.math.max
 
 @Singleton
 class Store {
+    private val _clients: ObservableList<Client> =
+        FXCollections.observableArrayList()
+    val clients: ObservableList<Client> =
+        FXCollections.unmodifiableObservableList(_clients)
 
-    private val clients: MutableList<Client> = mutableListOf()
-    private val projects: MutableList<Project> = mutableListOf()
-    private val tags: MutableList<Tag> = mutableListOf()
-    private val lineItems: MutableList<LineItem> = mutableListOf()
+    private val _projects: ObservableList<Project> =
+        FXCollections.observableArrayList()
+    val projects: ObservableList<Project> =
+        FXCollections.unmodifiableObservableList(_projects)
 
-    val onClientsUpdated: Notifier = Notifier()
-    val onProjectsUpdated: Notifier = Notifier()
-    val onTagsUpdated: Notifier = Notifier()
-    val onLineItemsUpdated: Notifier = Notifier()
+    private val _tags: ObservableList<Tag> = FXCollections.observableArrayList()
+    val tags: ObservableList<Tag> =
+        FXCollections.unmodifiableObservableList(_tags)
 
-    fun getClients(): List<Client> = clients
-
-    fun getProjects(): List<Project> = projects
-
-    fun getTags(): List<Tag> = tags
-
-    fun getLineItems(): List<LineItem> = lineItems
-
-    fun getClient(name: String): Client =
-        clients.first { it.name.equals(name, ignoreCase = true) }
-
-    fun getProject(clientName: String, projectName: String): Project =
-        projects.first {
-            it.client.name.equals(
-                clientName,
-                ignoreCase = true
-            ) && it.name.equals(projectName, ignoreCase = true)
-        }
-
-    fun getTag(name: String): Tag =
-        tags.first { it.name.equals(name, ignoreCase = true) }
+    private val _lineItems: ObservableList<LineItem> =
+        FXCollections.observableArrayList()
+    val lineItems: ObservableList<LineItem> =
+        FXCollections.unmodifiableObservableList(_lineItems)
 
     fun containsClient(name: String): Boolean =
-        clients.any { it.name.equals(name, ignoreCase = true) }
+        _clients.any { it.isIdentifiedBy(name) }
 
     fun containsProject(clientName: String, projectName: String): Boolean =
-        projects.any {
-            it.client.name.equals(
-                clientName,
-                ignoreCase = true
-            ) && it.name.equals(projectName, ignoreCase = true)
-        }
+        _projects.any { it.isIdentifiedBy(clientName, projectName) }
 
     fun containsTag(name: String): Boolean =
-        tags.any { it.name.equals(name, ignoreCase = true) }
+        _tags.any { it.isIdentifiedBy(name) }
 
     fun addClient(client: Client) {
-        clients.addSorted(client, unique = true)
-        onClientsUpdated()
+        _clients.addSorted(client)
     }
 
     fun addProject(project: Project) {
-        projects.addSorted(project, unique = true)
-        onProjectsUpdated()
+        _projects.addSorted(project)
     }
 
     fun addTag(tag: Tag) {
-        tags.addSorted(tag, unique = true)
-        onTagsUpdated()
+        _tags.addSorted(tag)
     }
 
     fun addLineItem(lineItem: LineItem) {
-        lineItems.addSorted(lineItem, unique = true)
-        onLineItemsUpdated()
+        _lineItems.addSorted(lineItem)
     }
 
     fun replaceClient(old: Client, new: Client) {
-        projects.replaceAll {
-            if (it.client == old) it.copy(client = new) else it
+        _clients.replaceSorted(old, new)
+        _projects.filter { it.client == old }.forEach {
+            replaceProject(it, it.copy(client = new))
         }
-        clients.removeSorted(old)
-        clients.addSorted(new, unique = true)
-        onProjectsUpdated()
-        onClientsUpdated()
     }
 
     fun replaceProject(old: Project, new: Project) {
-        projects.removeSorted(old)
-        projects.addSorted(new, unique = true)
-        onProjectsUpdated()
+        _projects.replaceSorted(old, new)
+        _lineItems.replaceAllSorted({ it.project == old }, { lineItem ->
+            when (lineItem) {
+                is TimeLineItem -> lineItem.copy(project = new)
+                is SaleLineItem -> lineItem.copy(project = new)
+            }
+        })
     }
 
     fun replaceTag(old: Tag, new: Tag) {
-        tags.removeSorted(old)
-        tags.addSorted(new, unique = true)
-        onTagsUpdated()
+        _tags.replaceSorted(old, new)
+        _lineItems.replaceAllSorted({ old in it.tags }, { lineItem ->
+            val newTags = lineItem.tags.replaced(old, new)
+            when (lineItem) {
+                is TimeLineItem -> lineItem.copy(tags = newTags)
+                is SaleLineItem -> lineItem.copy(tags = newTags)
+            }
+        })
     }
 
     fun replaceLineItem(old: LineItem, new: LineItem) {
-        lineItems.removeSorted(old)
-        lineItems.addSorted(new, unique = true)
-        onLineItemsUpdated()
+        _lineItems.replaceSorted(old, new)
     }
 
     fun removeClient(client: Client) {
-        projects.removeAll { it.client == client }
-        clients.removeSorted(client)
-        onProjectsUpdated()
-        onClientsUpdated()
+        _clients.removeSorted(client)
+        _projects.removeIf { it.client == client }
+        _lineItems.removeIf { it.project.client == client }
     }
 
     fun removeProject(project: Project) {
-        projects.removeSorted(project)
-        onProjectsUpdated()
+        _projects.removeSorted(project)
+        _lineItems.removeIf { it.project == project }
     }
 
     fun removeTag(tag: Tag) {
-        tags.removeSorted(tag)
-        onTagsUpdated()
+        _tags.removeSorted(tag)
+        _lineItems.replaceAllSorted({ tag in it.tags }, { lineItem ->
+            val newTags = lineItem.tags.without(tag)
+            when (lineItem) {
+                is TimeLineItem -> lineItem.copy(tags = newTags)
+                is SaleLineItem -> lineItem.copy(tags = newTags)
+            }
+        })
     }
 
     fun removeLineItem(lineItem: LineItem) {
-        lineItems.removeSorted(lineItem)
-        onLineItemsUpdated()
-    }
-
-    private fun <T> MutableList<T>.addSorted(
-        e: T,
-        unique: Boolean = false
-    ) where T : Comparable<T> {
-        val i = Collections.binarySearch(this, e)
-        require(!unique || i < 0)
-        this.add(max(-i - 1, 0), e)
-    }
-
-    private fun <T> MutableList<T>.removeSorted(e: T) where T : Comparable<T> {
-        val i = Collections.binarySearch(this, e)
-        require(i >= 0)
-        this.removeAt(i)
+        _lineItems.removeSorted(lineItem)
     }
 }

@@ -6,7 +6,6 @@ import com.google.inject.name.Names
 import javafx.scene.Node
 
 class ProjectModule : AbstractModule() {
-
     override fun configure() {
         install(
             FactoryModuleBuilder()

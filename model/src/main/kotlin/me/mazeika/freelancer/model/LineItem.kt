@@ -1,51 +1,65 @@
 package me.mazeika.freelancer.model
 
+import com.google.common.collect.ImmutableSet
 import java.math.BigDecimal
 import java.time.Instant
 import java.util.*
 
-sealed class LineItem(
-    val id: UUID,
-    val name: String,
-    val project: Project,
-    tags: List<Tag>,
-    val time: Instant
-) : Comparable<LineItem> {
-
-    val tags: List<Tag> = tags.toList()
-
-    init {
-        require(name == name.trim() && name.length in 1..128)
-    }
+sealed class LineItem : Comparable<LineItem> {
+    abstract val id: UUID
+    abstract val project: Project
+    abstract val name: String
+    abstract val tags: ImmutableSet<Tag>
+    abstract val time: Instant
 
     override fun compareTo(other: LineItem): Int =
         Comparator.comparing(LineItem::time)
-            .thenComparing(LineItem::name)
+            .thenComparing(LineItem::name, String.CASE_INSENSITIVE_ORDER)
             .thenComparing(LineItem::project)
             .thenComparing(LineItem::id)
-            .compare(this, other)
+            .compare(other, this) // reverse order
+
+    final override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+        other as TimeLineItem
+        return id == other.id
+                && project == other.project
+                && name.equals(other.name, ignoreCase = true)
+                && time == other.time
+    }
+
+    final override fun hashCode(): Int =
+        Objects.hash(id, project, name.toLowerCase(), time)
 }
 
-class TimeLineItem(
-    id: UUID,
-    name: String,
-    project: Project,
-    tags: List<Tag>,
-    start: Instant,
+data class TimeLineItem(
+    override val id: UUID,
+    override val project: Project,
+    override val name: String,
+    override val tags: ImmutableSet<Tag>,
+    val start: Instant,
     val end: Instant?
-) : LineItem(id, name, project, tags, start)
-
-class SaleLineItem(
-    id: UUID,
-    name: String,
-    project: Project,
-    tags: List<Tag>,
-    time: Instant,
-    val amount: BigDecimal,
-    val currency: Currency
-) : LineItem(id, name, project, tags, time) {
+) : LineItem() {
+    override val time: Instant = start
 
     init {
+        require(name.length in 1..128)
+    }
+}
+
+data class SaleLineItem(
+    override val id: UUID,
+    override val project: Project,
+    override val name: String,
+    override val tags: ImmutableSet<Tag>,
+    override val time: Instant,
+    val amount: BigDecimal,
+    val currency: Currency
+) : LineItem() {
+
+    init {
+        require(name.length in 1..128)
         require(amount >= BigDecimal.ZERO)
     }
 }

@@ -12,7 +12,6 @@ class OptionsFormComponent<T>(
     createCell: (() -> ListCell<T>)? = null,
     createButtonCell: (() -> ListCell<T>)? = null
 ) : ComboBox<T>(), FormComponent {
-
     init {
         if (createButtonCell != null || createCell != null) {
             buttonCell = (createButtonCell ?: createCell)!!()

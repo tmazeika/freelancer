@@ -2,13 +2,11 @@ package me.mazeika.freelancer.view.admin
 
 import javafx.scene.layout.BorderPane
 import me.mazeika.freelancer.binder.admin.TagsAdminBinder
-import me.mazeika.freelancer.view.components.TextCellFactory
 import me.mazeika.freelancer.view.components.forms.GridForm
 import me.mazeika.freelancer.view.components.forms.TextFormComponent
 import javax.inject.Inject
 
 class TagsAdminView @Inject constructor(vm: TagsAdminBinder) : BorderPane() {
-
     init {
         top = AdminActionBar(vm) { tag ->
             GridForm(
@@ -19,6 +17,6 @@ class TagsAdminView @Inject constructor(vm: TagsAdminBinder) : BorderPane() {
                 )
             )
         }
-        center = AdminEntityList(vm) { TextCellFactory { it.name.value } }
+        center = AdminEntityList.useToString(vm)
     }
 }

@@ -6,7 +6,6 @@ import me.mazeika.freelancer.view.components.ComponentsModule
 import me.mazeika.freelancer.view.services.ServicesModule
 
 class ViewModule : AbstractModule() {
-
     override fun configure() {
         bind(Parent::class.java).to(RootView::class.java)
         install(ComponentsModule())

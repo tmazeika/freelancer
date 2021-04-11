@@ -12,7 +12,6 @@ private val INJECTOR = Guice.createInjector(ViewModule(), BinderModule())
 fun main(args: Array<String>) = Application.launch(FXApp::class.java, *args)
 
 class FXApp : Application() {
-
     private val view = INJECTOR.getInstance(Parent::class.java)
 
     override fun start(stage: Stage) = with(stage) {

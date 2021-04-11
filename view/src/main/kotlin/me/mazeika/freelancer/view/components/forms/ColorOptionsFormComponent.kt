@@ -12,7 +12,6 @@ class ColorOptionsFormComponent(
     value: Property<Color>,
     options: Collection<Color>
 ) : ComboBox<Color>(), FormComponent {
-
     init {
         val createColorCellFactory = {
             GraphicCellFactory<Color> { color ->

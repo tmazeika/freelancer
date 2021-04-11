@@ -10,7 +10,6 @@ class NonNegativeDecimalFormComponent(
     override val label: String,
     value: Property<BigDecimal>
 ) : TextField(), FormComponent {
-
     init {
         textFormatter = NonNegativeDecimalTextFormatter().apply {
             valueProperty().bindBidirectional(value)

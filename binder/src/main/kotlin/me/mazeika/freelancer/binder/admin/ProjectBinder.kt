@@ -1,50 +1,40 @@
 package me.mazeika.freelancer.binder.admin
 
-import javafx.beans.property.*
+import javafx.beans.property.ObjectProperty
+import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.property.SimpleStringProperty
+import javafx.beans.property.StringProperty
 import me.mazeika.freelancer.model.Project
 import java.math.BigDecimal
 import java.util.*
 
-interface ProjectBinder {
-    val client: ReadOnlyObjectProperty<SnapshotClientBinder>
-    val name: ReadOnlyStringProperty
-    val colorIndex: ReadOnlyObjectProperty<Int>
-    val hourlyRate: ReadOnlyObjectProperty<BigDecimal>
-    val currency: ReadOnlyObjectProperty<Currency>
+data class ProjectSnapshot(internal val project: Project) {
+    val client: ClientSnapshot = ClientSnapshot(project.client)
+    val name: String = project.name
+    val colorIndex: Int = project.colorIndex
+    val hourlyRate: BigDecimal = project.hourlyRate
+    val currency: Currency = project.currency
+
+    override fun toString(): String = name
 }
 
-data class SnapshotProjectBinder(internal val project: Project) :
-    ProjectBinder {
-
-    override val client: ReadOnlyObjectProperty<SnapshotClientBinder> =
-        SimpleObjectProperty(SnapshotClientBinder(project.client))
-    override val name: ReadOnlyStringProperty =
-        SimpleStringProperty(project.name)
-    override val colorIndex: ReadOnlyObjectProperty<Int> =
-        SimpleObjectProperty(project.colorIndex)
-    override val hourlyRate: ReadOnlyObjectProperty<BigDecimal> =
-        SimpleObjectProperty(project.hourlyRate)
-    override val currency: ReadOnlyObjectProperty<Currency> =
-        SimpleObjectProperty(project.currency)
-}
-
-abstract class MutableProjectBinder(
-    client: SnapshotClientBinder,
+abstract class ProjectBinder(
+    client: ClientSnapshot,
     name: String,
     colorIndex: Int,
     hourlyRate: BigDecimal,
     currency: Currency
-) : ProjectBinder {
-
-    override val client: ObjectProperty<SnapshotClientBinder> =
+) {
+    val client: ObjectProperty<ClientSnapshot> =
         SimpleObjectProperty(client)
-    override val name: StringProperty = SimpleStringProperty(name)
-    override val colorIndex: ObjectProperty<Int> =
+    val name: StringProperty = SimpleStringProperty(name)
+    val colorIndex: ObjectProperty<Int> =
         SimpleObjectProperty(colorIndex)
-    override val hourlyRate: ObjectProperty<BigDecimal> =
+    val hourlyRate: ObjectProperty<BigDecimal> =
         SimpleObjectProperty(hourlyRate)
-    override val currency: ObjectProperty<Currency> =
+    val currency: ObjectProperty<Currency> =
         SimpleObjectProperty(currency)
+
     val maxNameLength: Int = 128
 
     internal fun createProject(): Project = Project(

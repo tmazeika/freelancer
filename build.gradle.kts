@@ -22,6 +22,7 @@ subprojects {
         val testImplementation by configurations
         val testRuntimeOnly by configurations
 
+        implementation("com.google.guava:guava:30.1.1-jre")
         implementation("com.google.inject:guice:5.0.1")
         implementation("com.google.inject.extensions:guice-assistedinject:5.0.1")
         implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.3")

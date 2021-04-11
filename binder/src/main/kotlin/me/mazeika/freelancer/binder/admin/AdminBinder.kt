@@ -8,12 +8,12 @@ import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import me.mazeika.freelancer.binder.ListBinder
 
-abstract class AdminBinder<out EB, FilledEB> : EntityActionBinder<EB>,
-    ListBinder<FilledEB> {
+abstract class AdminBinder<out Binder, Snapshot> : EntityActionBinder<Binder>,
+    ListBinder<Snapshot> {
 
-    override val items: ObservableList<FilledEB> =
+    override val items: ObservableList<Snapshot> =
         FXCollections.observableArrayList()
-    final override val selected: ObjectProperty<FilledEB> =
+    final override val selected: ObjectProperty<Snapshot> =
         SimpleObjectProperty()
     override val isCreateVisible: BooleanProperty = SimpleBooleanProperty(true)
     final override val isEditDeleteVisible: BooleanProperty =

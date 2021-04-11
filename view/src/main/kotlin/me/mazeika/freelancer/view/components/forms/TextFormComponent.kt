@@ -11,7 +11,6 @@ class TextFormComponent(
     value: Property<String>,
     maxLength: Int? = null
 ) : TextField(), FormComponent {
-
     init {
         if (maxLength != null) {
             textFormatter =

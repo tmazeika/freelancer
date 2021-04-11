@@ -1,27 +1,24 @@
 package me.mazeika.freelancer.binder.admin
 
-import javafx.beans.property.*
+import javafx.beans.property.ObjectProperty
+import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.property.SimpleStringProperty
+import javafx.beans.property.StringProperty
 import me.mazeika.freelancer.model.Client
 import java.util.*
 
-interface ClientBinder {
-    val name: ReadOnlyStringProperty
-    val currency: ReadOnlyObjectProperty<Currency>
+data class ClientSnapshot(internal val client: Client) {
+    val name: String = client.name
+    val currency: Currency = client.currency
+
+    override fun toString(): String = name
 }
 
-data class SnapshotClientBinder(internal val client: Client) : ClientBinder {
-    override val name: ReadOnlyStringProperty =
-        SimpleStringProperty(client.name)
-    override val currency: ReadOnlyObjectProperty<Currency> =
-        SimpleObjectProperty(client.currency)
-}
-
-abstract class MutableClientBinder(name: String, currency: Currency) :
-    ClientBinder {
-
-    override val name: StringProperty = SimpleStringProperty(name)
-    override val currency: ObjectProperty<Currency> =
+abstract class ClientBinder(name: String, currency: Currency) {
+    val name: StringProperty = SimpleStringProperty(name)
+    val currency: ObjectProperty<Currency> =
         SimpleObjectProperty(currency)
+
     val maxNameLength: Int = 128
 
     internal fun createClient(): Client =

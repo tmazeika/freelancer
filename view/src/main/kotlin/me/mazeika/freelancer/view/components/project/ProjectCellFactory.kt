@@ -1,17 +1,16 @@
 package me.mazeika.freelancer.view.components.project
 
 import javafx.scene.Node
-import me.mazeika.freelancer.binder.admin.ProjectBinder
+import me.mazeika.freelancer.binder.admin.ProjectSnapshot
 import javax.inject.Named
 
 interface ProjectCellFactory {
-
     @Named("long")
-    fun createLong(project: ProjectBinder): Node
+    fun createLong(project: ProjectSnapshot): Node
 
     @Named("short")
-    fun createShort(project: ProjectBinder): Node
+    fun createShort(project: ProjectSnapshot): Node
 
     @Named("button")
-    fun createButton(project: ProjectBinder): Node
+    fun createButton(project: ProjectSnapshot): Node
 }

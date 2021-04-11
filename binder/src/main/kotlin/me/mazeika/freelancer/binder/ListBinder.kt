@@ -1,9 +1,9 @@
 package me.mazeika.freelancer.binder
 
-import javafx.beans.property.ObjectProperty
+import javafx.beans.property.Property
 import javafx.collections.ObservableList
 
 interface ListBinder<T> {
     val items: ObservableList<out T>
-    val selected: ObjectProperty<in T>
+    val selected: Property<in T>
 }
