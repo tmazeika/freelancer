@@ -7,18 +7,23 @@ import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
 import javafx.scene.paint.Color
 import javafx.scene.text.Text
+import javafx.scene.text.TextAlignment
 import javafx.scene.text.TextFlow
 import me.mazeika.freelancer.binder.admin.LineItemsAdminBinder
+import me.mazeika.freelancer.binder.admin.TimeLineItemSnapshot
 import me.mazeika.freelancer.binder.i18n.I18nService
+import me.mazeika.freelancer.binder.util.map
 import me.mazeika.freelancer.view.components.GraphicCellFactory
 import me.mazeika.freelancer.view.components.TextCellFactory
 import me.mazeika.freelancer.view.components.forms.*
 import me.mazeika.freelancer.view.components.project.ProjectCellFactory
+import me.mazeika.freelancer.view.services.TimeService
 import javax.inject.Inject
 
 class LineItemsAdminView @Inject constructor(
     vm: LineItemsAdminBinder,
-    i18nService: I18nService,
+    private val i18nService: I18nService,
+    private val timeService: TimeService,
     projectCellFactory: ProjectCellFactory
 ) : BorderPane() {
     init {
@@ -78,10 +83,52 @@ class LineItemsAdminView @Inject constructor(
                         Pane().apply {
                             HBox.setHgrow(this, Priority.ALWAYS)
                         },
-                        Text(i18nService.formatTime(lineItem.start))
+                        if (lineItem.end == null) {
+                            CurrentTimeText(lineItem)
+                        } else {
+                            DoneTimeText(lineItem)
+                        }
                     )
                 }
             }
+        }
+    }
+
+    private inner class CurrentTimeText(lineItem: TimeLineItemSnapshot) :
+        TextFlow() {
+        init {
+            textAlignment = TextAlignment.RIGHT
+            children.setAll(
+                Text().apply {
+                    fill = Color.DODGERBLUE
+                    textProperty().bind(timeService.nowProperty.map { now ->
+                        i18nService.formatDuration(lineItem.start, now)
+                    })
+                },
+                Text("\n"),
+                Text("Started ${i18nService.formatLongTime(lineItem.start)}").apply {
+                    fill = Color.GRAY
+                },
+            )
+        }
+    }
+
+    private inner class DoneTimeText(lineItem: TimeLineItemSnapshot) :
+        TextFlow() {
+        init {
+            textAlignment = TextAlignment.RIGHT
+            children.setAll(
+                Text(
+                    i18nService.formatDuration(
+                        lineItem.start,
+                        lineItem.end!!
+                    )
+                ),
+                Text("\n"),
+                Text("Started ${i18nService.formatLongTime(lineItem.start)}").apply {
+                    fill = Color.GRAY
+                },
+            )
         }
     }
 }
