@@ -1,10 +1,9 @@
 package me.mazeika.freelancer.view.admin
 
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.geometry.Pos
-import javafx.scene.layout.BorderPane
-import javafx.scene.layout.HBox
-import javafx.scene.layout.Pane
-import javafx.scene.layout.Priority
+import javafx.scene.control.Button
+import javafx.scene.layout.*
 import javafx.scene.paint.Color
 import javafx.scene.text.Text
 import javafx.scene.text.TextAlignment
@@ -14,6 +13,7 @@ import me.mazeika.freelancer.binder.admin.TimeLineItemSnapshot
 import me.mazeika.freelancer.binder.i18n.I18nService
 import me.mazeika.freelancer.binder.util.map
 import me.mazeika.freelancer.view.components.GraphicCellFactory
+import me.mazeika.freelancer.view.components.TagDisplay
 import me.mazeika.freelancer.view.components.TextCellFactory
 import me.mazeika.freelancer.view.components.forms.*
 import me.mazeika.freelancer.view.components.project.ProjectCellFactory
@@ -21,7 +21,7 @@ import me.mazeika.freelancer.view.services.TimeService
 import javax.inject.Inject
 
 class LineItemsAdminView @Inject constructor(
-    vm: LineItemsAdminBinder,
+    private val vm: LineItemsAdminBinder,
     private val i18nService: I18nService,
     private val timeService: TimeService,
     projectCellFactory: ProjectCellFactory
@@ -70,6 +70,11 @@ class LineItemsAdminView @Inject constructor(
         center = AdminEntityList(vm) {
             GraphicCellFactory { lineItem ->
                 HBox().apply {
+                    val hoverProp = hoverProperty()
+                    val resumeHoverProp = hoverProp
+                        .and(SimpleBooleanProperty(lineItem.end != null))
+                    val stopHoverProp = hoverProp
+                        .and(SimpleBooleanProperty(lineItem.end == null))
                     alignment = Pos.CENTER_LEFT
                     spacing = 10.0
                     children.setAll(
@@ -80,13 +85,36 @@ class LineItemsAdminView @Inject constructor(
                                 fill = Color.GRAY
                             }
                         ),
+                        FlowPane().apply {
+                            HBox.setHgrow(this, Priority.NEVER)
+                            minWidth = 0.0
+                            prefWidth = 0.0
+                            alignment = Pos.CENTER_LEFT
+                            hgap = 10.0
+                            children.setAll(lineItem.tags.map(::TagDisplay))
+                        },
                         Pane().apply {
                             HBox.setHgrow(this, Priority.ALWAYS)
+                            minWidth = 0.0
+                            prefWidth = 0.0
+                        },
+                        Button("Resume").apply {
+                            setOnAction { vm.onResume(lineItem) }
+                            visibleProperty().bind(resumeHoverProp)
+                            managedProperty().bind(resumeHoverProp)
+                        },
+                        Button("Stop").apply {
+                            setOnAction { vm.onStop(lineItem) }
+                            visibleProperty().bind(stopHoverProp)
+                            managedProperty().bind(stopHoverProp)
                         },
                         if (lineItem.end == null) {
                             CurrentTimeText(lineItem)
                         } else {
                             DoneTimeText(lineItem)
+                        }.apply {
+                            visibleProperty().bind(hoverProp.not())
+                            managedProperty().bind(hoverProp.not())
                         }
                     )
                 }

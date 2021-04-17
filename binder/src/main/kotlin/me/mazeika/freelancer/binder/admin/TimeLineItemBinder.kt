@@ -1,7 +1,9 @@
 package me.mazeika.freelancer.binder.admin
 
 import com.google.common.collect.ImmutableSet
+import javafx.beans.binding.Bindings
 import javafx.beans.property.*
+import javafx.beans.value.ObservableBooleanValue
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import me.mazeika.freelancer.model.TimeLineItem
@@ -35,6 +37,19 @@ abstract class TimeLineItemBinder(
 
     val maxNameLength: Int = 128
     val isEndEmpty: BooleanProperty = SimpleBooleanProperty(end == null)
+
+    val isValid: ObservableBooleanValue =
+        Bindings.createBooleanBinding({
+            val nameVal = this.name.value.trim()
+            val startVal = this.start.value
+            val endVal = this.end.value
+            val isEndEmpty = this.isEndEmpty.value
+            val isNameValid = nameVal.isNotEmpty()
+            val isStartValid = startVal != null
+            val isEndValid =
+                isEndEmpty || (endVal != null && !startVal.isAfter(endVal))
+            isNameValid && isStartValid && isEndValid
+        }, this.name, this.start, this.end, this.isEndEmpty)
 
     internal fun createTimeLineItem(): TimeLineItem = TimeLineItem(
         id = id,

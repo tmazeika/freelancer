@@ -1,8 +1,6 @@
 package me.mazeika.freelancer.binder.admin
 
 import com.google.common.collect.ImmutableSet
-import javafx.beans.binding.Bindings
-import javafx.beans.value.ObservableBooleanValue
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.scene.Node
@@ -13,6 +11,7 @@ import me.mazeika.freelancer.model.Store
 import me.mazeika.freelancer.model.TimeLineItem
 import me.mazeika.freelancer.model.util.map
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 import java.util.*
 import javax.inject.Inject
 
@@ -33,6 +32,29 @@ class LineItemsAdminBinder @Inject constructor(
             TimeLineItemSnapshot(it as TimeLineItem)
         }
         isCreateVisible.bind(store.projects.isNotEmpty())
+    }
+
+    fun onResume(item: TimeLineItemSnapshot) {
+        store.addLineItem(
+            item.timeLineItem.copy(
+                id = UUID.randomUUID(),
+                start = Instant.now().truncatedTo(ChronoUnit.SECONDS),
+                end = null
+            )
+        )
+    }
+
+    fun onStop(item: TimeLineItemSnapshot) {
+        store.replaceLineItem(
+            old = item.timeLineItem,
+            new = item.timeLineItem.copy(end = Instant.now().let {
+                if (it.nano > 0) {
+                    it.plusSeconds(1).truncatedTo(ChronoUnit.SECONDS)
+                } else {
+                    it
+                }
+            })
+        )
     }
 
     override fun onCreate(dialogViewFactory: (TimeLineItemBinder) -> Node): Boolean {
@@ -83,20 +105,7 @@ class LineItemsAdminBinder @Inject constructor(
         tags = ImmutableSet.of(),
         start = Instant.now(),
         end = null,
-    ) {
-        val isValid: ObservableBooleanValue =
-            Bindings.createBooleanBinding({
-                val name = name.value.trim()
-                val start = start.value
-                val end = end.value
-                val isEndEmpty = isEndEmpty.value
-                val isNameValid = name.isNotEmpty()
-                val isStartValid = start != null
-                val isEndValid =
-                    isEndEmpty || (end != null && !start.isAfter(end))
-                isNameValid && isStartValid && isEndValid
-            }, name, start, end, isEndEmpty)
-    }
+    )
 
     private inner class FilledTimeLineItemBinder(val timeLineItem: TimeLineItem) :
         TimeLineItemBinder(
@@ -106,18 +115,5 @@ class LineItemsAdminBinder @Inject constructor(
             tags = timeLineItem.tags.map(::TagSnapshot),
             start = timeLineItem.start,
             end = timeLineItem.end
-        ) {
-        val isValid: ObservableBooleanValue =
-            Bindings.createBooleanBinding({
-                val name = name.value.trim()
-                val start = start.value
-                val end = end.value
-                val isEndEmpty = isEndEmpty.value
-                val isNameValid = name.isNotEmpty()
-                val isStartValid = start != null
-                val isEndValid =
-                    isEndEmpty || (end != null && !start.isAfter(end))
-                isNameValid && isStartValid && isEndValid
-            }, name, start, end, isEndEmpty)
-    }
+        )
 }

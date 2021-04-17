@@ -35,8 +35,8 @@ class LocalI18nService : I18nService {
     override fun formatDuration(duration: Duration): String {
         val seconds = abs(duration.toSeconds())
         return String.format(
-            defaultLocale,
-            "%s%d:%02d:%02d",
+            locale = defaultLocale,
+            format = "%s%d:%02d:%02d",
             if (duration.isNegative) "-" else "",
             seconds / 3600,
             (seconds % 3600) / 60,
