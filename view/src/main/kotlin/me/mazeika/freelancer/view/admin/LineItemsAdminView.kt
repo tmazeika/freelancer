@@ -1,5 +1,6 @@
 package me.mazeika.freelancer.view.admin
 
+import javafx.geometry.Pos
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
@@ -8,18 +9,17 @@ import javafx.scene.paint.Color
 import javafx.scene.text.Text
 import javafx.scene.text.TextFlow
 import me.mazeika.freelancer.binder.admin.LineItemsAdminBinder
+import me.mazeika.freelancer.binder.i18n.I18nService
 import me.mazeika.freelancer.view.components.GraphicCellFactory
 import me.mazeika.freelancer.view.components.TextCellFactory
-import me.mazeika.freelancer.view.components.forms.GridForm
-import me.mazeika.freelancer.view.components.forms.MultiOptionsFormComponent
-import me.mazeika.freelancer.view.components.forms.OptionsFormComponent
-import me.mazeika.freelancer.view.components.forms.TextFormComponent
+import me.mazeika.freelancer.view.components.forms.*
 import me.mazeika.freelancer.view.components.project.ProjectCellFactory
 import javax.inject.Inject
 
 class LineItemsAdminView @Inject constructor(
     vm: LineItemsAdminBinder,
-    private val projectCellFactory: ProjectCellFactory
+    i18nService: I18nService,
+    projectCellFactory: ProjectCellFactory
 ) : BorderPane() {
     init {
         top = AdminActionBar(vm) { lineItem ->
@@ -45,12 +45,27 @@ class LineItemsAdminView @Inject constructor(
                     values = lineItem.tags,
                     options = vm.allTags,
                     createCell = { TextCellFactory.useToString(it) }
-                )
+                ),
+                DateTimeFormComponent(
+                    label = "Start",
+                    value = lineItem.start,
+                    zone = i18nService.defaultZone,
+                    locale = i18nService.defaultLocale,
+                ),
+                DateTimeFormComponent(
+                    label = "End",
+                    value = lineItem.end,
+                    zone = i18nService.defaultZone,
+                    locale = i18nService.defaultLocale,
+                ).apply {
+                    lineItem.isEndEmpty.bind(emptyProperty)
+                },
             )
         }
         center = AdminEntityList(vm) {
             GraphicCellFactory { lineItem ->
                 HBox().apply {
+                    alignment = Pos.CENTER_LEFT
                     spacing = 10.0
                     children.setAll(
                         TextFlow(
@@ -62,7 +77,8 @@ class LineItemsAdminView @Inject constructor(
                         ),
                         Pane().apply {
                             HBox.setHgrow(this, Priority.ALWAYS)
-                        }
+                        },
+                        Text(i18nService.formatTime(lineItem.start))
                     )
                 }
             }

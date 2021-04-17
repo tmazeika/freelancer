@@ -1,10 +1,7 @@
 package me.mazeika.freelancer.binder.admin
 
 import com.google.common.collect.ImmutableSet
-import javafx.beans.property.ObjectProperty
-import javafx.beans.property.SimpleObjectProperty
-import javafx.beans.property.SimpleStringProperty
-import javafx.beans.property.StringProperty
+import javafx.beans.property.*
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import me.mazeika.freelancer.model.TimeLineItem
@@ -37,6 +34,7 @@ abstract class TimeLineItemBinder(
     val end: ObjectProperty<Instant> = SimpleObjectProperty(end)
 
     val maxNameLength: Int = 128
+    val isEndEmpty: BooleanProperty = SimpleBooleanProperty(end == null)
 
     internal fun createTimeLineItem(): TimeLineItem = TimeLineItem(
         id = id,

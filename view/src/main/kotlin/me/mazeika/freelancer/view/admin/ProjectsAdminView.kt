@@ -2,14 +2,15 @@ package me.mazeika.freelancer.view.admin
 
 import javafx.beans.property.SimpleObjectProperty
 import javafx.scene.layout.BorderPane
+import javafx.scene.paint.Color
 import me.mazeika.freelancer.binder.admin.ProjectsAdminBinder
 import me.mazeika.freelancer.binder.i18n.I18nService
+import me.mazeika.freelancer.binder.util.bindBidirectional
 import me.mazeika.freelancer.view.components.GraphicCellFactory
 import me.mazeika.freelancer.view.components.TextCellFactory
 import me.mazeika.freelancer.view.components.forms.*
 import me.mazeika.freelancer.view.components.project.ProjectCellFactory
 import me.mazeika.freelancer.view.services.ColorService
-import me.mazeika.freelancer.view.util.BidiBindings
 import me.mazeika.freelancer.view.util.ColorIndexConverter
 import javax.inject.Inject
 
@@ -35,11 +36,12 @@ class ProjectsAdminView @Inject constructor(
                 ),
                 ColorOptionsFormComponent(
                     label = "Color",
-                    value = BidiBindings.bind(
-                        SimpleObjectProperty(),
-                        project.colorIndex,
-                        ColorIndexConverter(colorService.colors)
-                    ),
+                    value = SimpleObjectProperty<Color>().apply {
+                        bindBidirectional(
+                            project.colorIndex,
+                            ColorIndexConverter(colorService.colors)
+                        )
+                    },
                     options = colorService.colors
                 ),
                 NonNegativeDecimalFormComponent(

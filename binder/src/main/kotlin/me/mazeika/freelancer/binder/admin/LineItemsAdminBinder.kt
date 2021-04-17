@@ -87,9 +87,15 @@ class LineItemsAdminBinder @Inject constructor(
         val isValid: ObservableBooleanValue =
             Bindings.createBooleanBinding({
                 val name = name.value.trim()
+                val start = start.value
+                val end = end.value
+                val isEndEmpty = isEndEmpty.value
                 val isNameValid = name.isNotEmpty()
-                isNameValid
-            }, name)
+                val isStartValid = start != null
+                val isEndValid =
+                    isEndEmpty || (end != null && !start.isAfter(end))
+                isNameValid && isStartValid && isEndValid
+            }, name, start, end, isEndEmpty)
     }
 
     private inner class FilledTimeLineItemBinder(val timeLineItem: TimeLineItem) :
@@ -104,8 +110,14 @@ class LineItemsAdminBinder @Inject constructor(
         val isValid: ObservableBooleanValue =
             Bindings.createBooleanBinding({
                 val name = name.value.trim()
+                val start = start.value
+                val end = end.value
+                val isEndEmpty = isEndEmpty.value
                 val isNameValid = name.isNotEmpty()
-                isNameValid
-            }, name)
+                val isStartValid = start != null
+                val isEndValid =
+                    isEndEmpty || (end != null && !start.isAfter(end))
+                isNameValid && isStartValid && isEndValid
+            }, name, start, end, isEndEmpty)
     }
 }
