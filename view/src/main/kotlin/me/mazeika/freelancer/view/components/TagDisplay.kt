@@ -8,12 +8,12 @@ import javafx.scene.text.TextFlow
 import me.mazeika.freelancer.binder.admin.TagSnapshot
 
 class TagDisplay(tag: TagSnapshot) :
-    TextFlow(Text(tag.name).apply { fill = Color.DARKBLUE }) {
+    TextFlow(Text(tag.name).apply { fill = Color.STEELBLUE }) {
     init {
         padding = Insets(2.0, 8.0, 2.0, 8.0)
         border = Border(
             BorderStroke(
-                Color.CORNFLOWERBLUE,
+                Color.DODGERBLUE,
                 BorderStrokeStyle.SOLID,
                 CornerRadii(15.0),
                 BorderWidths.DEFAULT

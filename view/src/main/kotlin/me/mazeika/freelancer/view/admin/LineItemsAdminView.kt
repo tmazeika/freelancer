@@ -1,9 +1,11 @@
 package me.mazeika.freelancer.view.admin
 
-import javafx.beans.property.SimpleBooleanProperty
+import javafx.geometry.Insets
 import javafx.geometry.Pos
 import javafx.scene.control.Button
-import javafx.scene.layout.*
+import javafx.scene.layout.BorderPane
+import javafx.scene.layout.FlowPane
+import javafx.scene.layout.StackPane
 import javafx.scene.paint.Color
 import javafx.scene.text.Text
 import javafx.scene.text.TextAlignment
@@ -69,94 +71,87 @@ class LineItemsAdminView @Inject constructor(
         }
         center = AdminEntityList(vm) {
             GraphicCellFactory { lineItem ->
-                HBox().apply {
-                    val hoverProp = hoverProperty()
-                    val resumeHoverProp = hoverProp
-                        .and(SimpleBooleanProperty(lineItem.end != null))
-                    val stopHoverProp = hoverProp
-                        .and(SimpleBooleanProperty(lineItem.end == null))
-                    alignment = Pos.CENTER_LEFT
-                    spacing = 10.0
-                    children.setAll(
-                        TextFlow(
-                            Text(lineItem.name),
-                            Text("\n"),
-                            Text("${lineItem.project.name} (${lineItem.project.client.name})").apply {
-                                fill = Color.GRAY
-                            }
-                        ),
-                        FlowPane().apply {
-                            HBox.setHgrow(this, Priority.NEVER)
-                            minWidth = 0.0
-                            prefWidth = 0.0
-                            alignment = Pos.CENTER_LEFT
-                            hgap = 10.0
+                BorderPane().apply {
+                    padding = Insets(5.0)
+                    left = TextFlow(
+                        Text(lineItem.name),
+                        Text("\n"),
+                        Text("${lineItem.project.name} (${lineItem.project.client.name})").apply {
+                            fill = Color.GRAY
+                        }
+                    ).apply {
+                        lineSpacing = 5.0
+                    }
+                    if (lineItem.tags.isNotEmpty()) {
+                        bottom = FlowPane().apply {
+                            padding = Insets(10.0, 0.0, 0.0, 0.0)
+                            hgap = 5.0
+                            vgap = 5.0
                             children.setAll(lineItem.tags.map(::TagDisplay))
-                        },
-                        Pane().apply {
-                            HBox.setHgrow(this, Priority.ALWAYS)
-                            minWidth = 0.0
-                            prefWidth = 0.0
-                        },
-                        Button("Resume").apply {
-                            setOnAction { vm.onResume(lineItem) }
-                            visibleProperty().bind(resumeHoverProp)
-                            managedProperty().bind(resumeHoverProp)
-                        },
+                        }
+                    }
+                    val timeInfo = if (lineItem.end == null) {
+                        RunningTimeText(lineItem)
+                    } else {
+                        StoppedTimeText(lineItem)
+                    }.also {
+                        it.visibleProperty().bind(hoverProperty().not())
+                    }
+                    val actionBtn = if (lineItem.end == null) {
                         Button("Stop").apply {
                             setOnAction { vm.onStop(lineItem) }
-                            visibleProperty().bind(stopHoverProp)
-                            managedProperty().bind(stopHoverProp)
-                        },
-                        if (lineItem.end == null) {
-                            CurrentTimeText(lineItem)
-                        } else {
-                            DoneTimeText(lineItem)
-                        }.apply {
-                            visibleProperty().bind(hoverProp.not())
-                            managedProperty().bind(hoverProp.not())
                         }
-                    )
+                    } else {
+                        Button("Resume").apply {
+                            setOnAction { vm.onResume(lineItem) }
+                        }
+                    }.also {
+                        it.visibleProperty().bind(hoverProperty())
+                    }
+                    right = StackPane(timeInfo, actionBtn).apply {
+                        alignment = Pos.CENTER_RIGHT
+                    }
                 }
             }
         }
     }
 
-    private inner class CurrentTimeText(lineItem: TimeLineItemSnapshot) :
-        TextFlow() {
+    private inner class RunningTimeText(lineItem: TimeLineItemSnapshot) :
+        TextFlow(
+            Text().apply {
+                fill = Color.DODGERBLUE
+                textProperty().bind(timeService.nowProperty.map { now ->
+                    i18nService.formatDuration(lineItem.start, now)
+                })
+            },
+            Text("\n"),
+            Text("Started ${i18nService.formatLongTime(lineItem.start)}").apply {
+                fill = Color.GRAY
+                minWidth = USE_PREF_SIZE
+            },
+        ) {
         init {
             textAlignment = TextAlignment.RIGHT
-            children.setAll(
-                Text().apply {
-                    fill = Color.DODGERBLUE
-                    textProperty().bind(timeService.nowProperty.map { now ->
-                        i18nService.formatDuration(lineItem.start, now)
-                    })
-                },
-                Text("\n"),
-                Text("Started ${i18nService.formatLongTime(lineItem.start)}").apply {
-                    fill = Color.GRAY
-                },
-            )
+            lineSpacing = 5.0
         }
     }
 
-    private inner class DoneTimeText(lineItem: TimeLineItemSnapshot) :
-        TextFlow() {
+    private inner class StoppedTimeText(lineItem: TimeLineItemSnapshot) :
+        TextFlow(
+            Text(
+                i18nService.formatDuration(
+                    lineItem.start,
+                    lineItem.end!!
+                )
+            ),
+            Text("\n"),
+            Text("Started ${i18nService.formatLongTime(lineItem.start)}").apply {
+                fill = Color.GRAY
+            }
+        ) {
         init {
             textAlignment = TextAlignment.RIGHT
-            children.setAll(
-                Text(
-                    i18nService.formatDuration(
-                        lineItem.start,
-                        lineItem.end!!
-                    )
-                ),
-                Text("\n"),
-                Text("Started ${i18nService.formatLongTime(lineItem.start)}").apply {
-                    fill = Color.GRAY
-                },
-            )
+            lineSpacing = 5.0
         }
     }
 }

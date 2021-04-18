@@ -28,7 +28,9 @@ class ProjectCellComponents @Inject constructor(
         Text(project.client.name).apply {
             fill = Color.GRAY
         }
-    )
+    ).apply {
+        lineSpacing = 5.0
+    }
 
     fun createSpacer(): Node = Pane().apply {
         HBox.setHgrow(this, Priority.ALWAYS)
