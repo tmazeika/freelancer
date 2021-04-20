@@ -21,11 +21,12 @@ class NonNegativeDecimalTextFormatter :
         override fun apply(change: Change?): Change? {
             val text = change!!.controlNewText
             val isInvalid = !filterPattern.matcher(text).matches()
+                    || text.length > 128
             return if (isInvalid) null else change
         }
     }
 
     companion object {
-        private val filterPattern = Pattern.compile("[0-9]*\\.?[0-9]*")
+        private val filterPattern = Pattern.compile("[0-9]*\\.?[0-9]{0,32}")
     }
 }

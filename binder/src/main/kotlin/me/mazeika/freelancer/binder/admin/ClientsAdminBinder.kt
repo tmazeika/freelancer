@@ -8,7 +8,6 @@ import me.mazeika.freelancer.binder.services.DialogService
 import me.mazeika.freelancer.binder.util.bindContent
 import me.mazeika.freelancer.model.Client
 import me.mazeika.freelancer.model.Store
-import java.util.*
 import javax.inject.Inject
 
 class ClientsAdminBinder @Inject constructor(
@@ -21,8 +20,8 @@ class ClientsAdminBinder @Inject constructor(
         items.bindContent(store.clients, ::ClientSnapshot)
 
         // TODO: remove seed
-        store.addClient(Client("John Doe PSC Ltd", Currency.getInstance("GBP")))
-        store.addClient(Client("Mazeika LLC", Currency.getInstance("USD")))
+//        store.addClient(Client("John Doe PSC Ltd", Currency.getInstance("GBP")))
+//        store.addClient(Client("Mazeika LLC", Currency.getInstance("USD")))
     }
 
     override fun onCreate(dialogViewFactory: (ClientBinder) -> Node): Boolean {

@@ -14,6 +14,8 @@ data class Project(
         require(name.length in 1..128)
         require(colorIndex >= 0)
         require(hourlyRate >= BigDecimal.ZERO)
+        require(hourlyRate.precision() <= 128)
+        require(hourlyRate.scale() <= 32)
     }
 
     fun isIdentifiedBy(clientName: String, name: String): Boolean =
@@ -21,9 +23,7 @@ data class Project(
                 && this.name.equals(name, ignoreCase = true)
 
     override fun compareTo(other: Project): Int =
-        Comparator.comparing(Project::client)
-            .thenComparing(Project::name, String.CASE_INSENSITIVE_ORDER)
-            .compare(this, other)
+        comparator.compare(this, other)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -34,4 +34,10 @@ data class Project(
     }
 
     override fun hashCode(): Int = Objects.hash(client, name.toLowerCase())
+
+    companion object {
+        val comparator: Comparator<Project> =
+            Comparator.comparing(Project::client)
+                .thenComparing(Project::name, String.CASE_INSENSITIVE_ORDER)
+    }
 }

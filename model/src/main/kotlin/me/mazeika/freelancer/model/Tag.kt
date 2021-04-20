@@ -8,8 +8,7 @@ data class Tag(val name: String) : Comparable<Tag> {
     fun isIdentifiedBy(name: String): Boolean =
         this.name.equals(name, ignoreCase = true)
 
-    override fun compareTo(other: Tag): Int =
-        name.compareTo(other.name, ignoreCase = true)
+    override fun compareTo(other: Tag): Int = comparator.compare(this, other)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -19,4 +18,9 @@ data class Tag(val name: String) : Comparable<Tag> {
     }
 
     override fun hashCode(): Int = name.toLowerCase().hashCode()
+
+    companion object {
+        val comparator: Comparator<Tag> =
+            Comparator.comparing(Tag::name, String.CASE_INSENSITIVE_ORDER)
+    }
 }

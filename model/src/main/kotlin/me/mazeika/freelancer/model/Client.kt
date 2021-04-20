@@ -11,8 +11,7 @@ data class Client(val name: String, val currency: Currency) :
     fun isIdentifiedBy(name: String): Boolean =
         this.name.equals(name, ignoreCase = true)
 
-    override fun compareTo(other: Client): Int =
-        name.compareTo(other.name, ignoreCase = true)
+    override fun compareTo(other: Client): Int = comparator.compare(this, other)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -22,4 +21,9 @@ data class Client(val name: String, val currency: Currency) :
     }
 
     override fun hashCode(): Int = name.toLowerCase().hashCode()
+
+    companion object {
+        val comparator: Comparator<Client> =
+            Comparator.comparing(Client::name, String.CASE_INSENSITIVE_ORDER)
+    }
 }

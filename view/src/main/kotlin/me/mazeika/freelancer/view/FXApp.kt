@@ -5,6 +5,8 @@ import javafx.application.Application
 import javafx.scene.Parent
 import javafx.scene.Scene
 import javafx.stage.Stage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.cancel
 import me.mazeika.freelancer.binder.BinderModule
 
 private val INJECTOR = Guice.createInjector(ViewModule(), BinderModule())
@@ -24,5 +26,9 @@ class FXApp : Application() {
                 .toString()
         }
         show()
+    }
+
+    override fun stop() {
+        INJECTOR.getInstance(CoroutineScope::class.java).cancel("Shutting down")
     }
 }

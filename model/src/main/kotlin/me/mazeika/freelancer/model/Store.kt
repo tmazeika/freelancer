@@ -1,12 +1,20 @@
 package me.mazeika.freelancer.model
 
 import javafx.collections.FXCollections
+import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import me.mazeika.freelancer.model.persist.PersistenceStore
 import me.mazeika.freelancer.model.util.*
+import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class Store {
+class Store @Inject constructor(
+    private val scope: CoroutineScope,
+    private val persistence: PersistenceStore
+) {
     private val _clients: ObservableList<Client> =
         FXCollections.observableArrayList()
     val clients: ObservableList<Client> =
@@ -25,6 +33,24 @@ class Store {
         FXCollections.observableArrayList()
     val lineItems: ObservableList<LineItem> =
         FXCollections.unmodifiableObservableList(_lineItems)
+
+    init {
+        _clients += persistence.loadClients()
+        _clients.addListener(ListChangeListener {
+            while (it.next()) {
+                it.addedSubList.forEach { client ->
+                    scope.launch {
+                        persistence.addClient(client)
+                    }
+                }
+                it.removed.forEach { client ->
+                    scope.launch {
+                        persistence.removeClient(client)
+                    }
+                }
+            }
+        })
+    }
 
     fun containsClient(name: String): Boolean =
         _clients.any { it.isIdentifiedBy(name) }
