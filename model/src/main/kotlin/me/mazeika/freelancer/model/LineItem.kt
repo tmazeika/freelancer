@@ -13,26 +13,20 @@ sealed class LineItem : Comparable<LineItem> {
     abstract val time: Instant
 
     override fun compareTo(other: LineItem): Int =
-        comparator.compare(other, this)
+        comparator.compare(this, other)
 
     final override fun equals(other: Any?): Boolean {
-        if (this === other) return true
         if (javaClass != other?.javaClass) return false
-        other as TimeLineItem
-        return id == other.id
-                && project == other.project
-                && name.equals(other.name, ignoreCase = true)
-                && time == other.time
+        return this.compareTo(other as TimeLineItem) == 0
     }
 
     final override fun hashCode(): Int =
-        Objects.hash(id, project, name.toLowerCase(), time)
+        Objects.hash(time, name.toLowerCase(), project, id)
 
     companion object {
         val comparator: Comparator<LineItem> =
             Comparator.comparing(LineItem::time)
                 .thenComparing(LineItem::name, String.CASE_INSENSITIVE_ORDER)
-                .thenComparing(LineItem::project)
                 .thenComparing(LineItem::id)
                 .reversed()
     }

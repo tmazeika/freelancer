@@ -1,6 +1,7 @@
 package me.mazeika.freelancer.model.util
 
 import com.google.common.collect.ImmutableSet
+import me.mazeika.freelancer.model.util.BulkEditObservableList.Companion.runChanges
 import java.util.*
 import kotlin.math.max
 
@@ -16,15 +17,18 @@ fun <T> MutableList<T>.removeSorted(obj: T) where T : Comparable<T> {
     this.removeAt(i)
 }
 
-fun <T> MutableList<T>.replaceSorted(old: T, new: T) where T : Comparable<T> {
+fun <T> BulkEditObservableList<T>.replaceSorted(
+    old: T,
+    new: T
+) where T : Comparable<T> = runChanges(this) {
     this.removeSorted(old)
     this.addSorted(new)
 }
 
-fun <T> MutableList<T>.replaceAllSorted(
+fun <T> BulkEditObservableList<T>.replaceAllSorted(
     predicate: (T) -> Boolean,
     transform: (T) -> T
-) where T : Comparable<T> {
+) where T : Comparable<T> = runChanges(this) {
     val toAdd = mutableListOf<T>()
     this.removeIf { item ->
         predicate(item).also { if (it) toAdd += transform(item) }

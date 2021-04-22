@@ -9,6 +9,7 @@ import java.math.BigDecimal
 import java.util.*
 
 data class ProjectSnapshot(internal val project: Project) {
+    val id: UUID = project.id
     val client: ClientSnapshot = ClientSnapshot(project.client)
     val name: String = project.name
     val colorIndex: Int = project.colorIndex
@@ -19,25 +20,24 @@ data class ProjectSnapshot(internal val project: Project) {
 }
 
 abstract class ProjectBinder(
+    val id: UUID,
     client: ClientSnapshot,
     name: String,
     colorIndex: Int,
     hourlyRate: BigDecimal,
     currency: Currency
 ) {
-    val client: ObjectProperty<ClientSnapshot> =
-        SimpleObjectProperty(client)
+    val client: ObjectProperty<ClientSnapshot> = SimpleObjectProperty(client)
     val name: StringProperty = SimpleStringProperty(name)
-    val colorIndex: ObjectProperty<Int> =
-        SimpleObjectProperty(colorIndex)
+    val colorIndex: ObjectProperty<Int> = SimpleObjectProperty(colorIndex)
     val hourlyRate: ObjectProperty<BigDecimal> =
         SimpleObjectProperty(hourlyRate)
-    val currency: ObjectProperty<Currency> =
-        SimpleObjectProperty(currency)
+    val currency: ObjectProperty<Currency> = SimpleObjectProperty(currency)
 
     val maxNameLength: Int = 128
 
     internal fun createProject(): Project = Project(
+        id = id,
         client = client.value.client,
         name = name.value.trim(),
         colorIndex = colorIndex.value,

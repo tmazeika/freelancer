@@ -7,6 +7,7 @@ import me.mazeika.freelancer.binder.services.DialogService
 import me.mazeika.freelancer.binder.util.bindContent
 import me.mazeika.freelancer.model.Store
 import me.mazeika.freelancer.model.Tag
+import java.util.*
 import javax.inject.Inject
 
 class TagsAdminBinder @Inject constructor(
@@ -16,14 +17,6 @@ class TagsAdminBinder @Inject constructor(
 
     init {
         items.bindContent(store.tags, ::TagSnapshot)
-
-        // TODO: remove seed
-//        store.addTag(Tag("Test1"))
-//        store.addTag(Tag("A Really Long Tag Name"))
-//        store.addTag(Tag("Tag2222"))
-//        store.addTag(Tag("My Fun Tag"))
-//        store.addTag(Tag("Uninvoiced"))
-//        store.addTag(Tag("Invoiced!"))
     }
 
     override fun onCreate(dialogViewFactory: (TagBinder) -> Node): Boolean {
@@ -64,7 +57,8 @@ class TagsAdminBinder @Inject constructor(
         return ok
     }
 
-    private inner class EmptyTagBinder : TagBinder(name = "") {
+    private inner class EmptyTagBinder :
+        TagBinder(id = UUID.randomUUID(), name = "") {
         val isValid: ObservableBooleanValue =
             Bindings.createBooleanBinding({
                 val name = name.value.trim()
@@ -75,7 +69,7 @@ class TagsAdminBinder @Inject constructor(
     }
 
     private inner class FilledTagBinder(val tag: Tag) :
-        TagBinder(name = tag.name) {
+        TagBinder(id = tag.id, name = tag.name) {
 
         val isValid: ObservableBooleanValue =
             Bindings.createBooleanBinding({

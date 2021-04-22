@@ -15,7 +15,8 @@ abstract class AdminBinder<out Binder, Snapshot> : EntityActionBinder<Binder>,
         FXCollections.observableArrayList()
     final override val selected: ObjectProperty<Snapshot> =
         SimpleObjectProperty()
-    override val isCreateVisible: BooleanProperty = SimpleBooleanProperty(true)
+    final override val isCreateVisible: BooleanProperty =
+        SimpleBooleanProperty(true)
     final override val isEditDeleteVisible: BooleanProperty =
         SimpleBooleanProperty()
 

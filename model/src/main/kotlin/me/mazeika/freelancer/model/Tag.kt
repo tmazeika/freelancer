@@ -1,6 +1,8 @@
 package me.mazeika.freelancer.model
 
-data class Tag(val name: String) : Comparable<Tag> {
+import java.util.*
+
+data class Tag(val id: UUID, val name: String) : Comparable<Tag> {
     init {
         require(name.length in 1..32)
     }
@@ -11,10 +13,8 @@ data class Tag(val name: String) : Comparable<Tag> {
     override fun compareTo(other: Tag): Int = comparator.compare(this, other)
 
     override fun equals(other: Any?): Boolean {
-        if (this === other) return true
         if (javaClass != other?.javaClass) return false
-        other as Tag
-        return name.equals(other.name, ignoreCase = true)
+        return this.compareTo(other as Tag) == 0
     }
 
     override fun hashCode(): Int = name.toLowerCase().hashCode()

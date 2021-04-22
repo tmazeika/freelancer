@@ -12,6 +12,7 @@ import me.mazeika.freelancer.binder.util.isNotEmpty
 import me.mazeika.freelancer.model.Project
 import me.mazeika.freelancer.model.Store
 import java.math.BigDecimal
+import java.util.*
 import javax.inject.Inject
 
 class ProjectsAdminBinder @Inject constructor(
@@ -27,28 +28,6 @@ class ProjectsAdminBinder @Inject constructor(
         allClients.bindContent(store.clients, ::ClientSnapshot)
         items.bindContent(store.projects, ::ProjectSnapshot)
         isCreateVisible.bind(allClients.isNotEmpty())
-
-        // TODO: remove seed
-//        store.addProject(
-//            Project(
-//                Client(
-//                    "John Doe PSC Ltd",
-//                    Currency.getInstance("GBP")
-//                ),
-//                "ACME Website",
-//                0,
-//                BigDecimal(56),
-//                Currency.getInstance("USD")
-//            )
-//        )
-//        store.addProject(
-//            Project(
-//                Client(
-//                    "Mazeika LLC",
-//                    Currency.getInstance("USD")
-//                ), "freelancer", 1, BigDecimal(5), Currency.getInstance("USD")
-//            )
-//        )
     }
 
     override fun onCreate(dialogViewFactory: (ProjectBinder) -> Node): Boolean {
@@ -93,6 +72,7 @@ class ProjectsAdminBinder @Inject constructor(
     }
 
     private inner class EmptyProjectBinder : ProjectBinder(
+        id = UUID.randomUUID(),
         client = allClients[0],
         name = "",
         colorIndex = 0,
@@ -111,6 +91,7 @@ class ProjectsAdminBinder @Inject constructor(
 
     private inner class FilledProjectBinder(val project: Project) :
         ProjectBinder(
+            id = project.id,
             client = ClientSnapshot(project.client),
             name = project.name,
             colorIndex = project.colorIndex,

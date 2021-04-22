@@ -8,6 +8,7 @@ import me.mazeika.freelancer.binder.services.DialogService
 import me.mazeika.freelancer.binder.util.bindContent
 import me.mazeika.freelancer.model.Client
 import me.mazeika.freelancer.model.Store
+import java.util.*
 import javax.inject.Inject
 
 class ClientsAdminBinder @Inject constructor(
@@ -15,13 +16,8 @@ class ClientsAdminBinder @Inject constructor(
     private val dialogService: DialogService,
     private val i18nService: I18nService
 ) : AdminBinder<ClientBinder, ClientSnapshot>() {
-
     init {
         items.bindContent(store.clients, ::ClientSnapshot)
-
-        // TODO: remove seed
-//        store.addClient(Client("John Doe PSC Ltd", Currency.getInstance("GBP")))
-//        store.addClient(Client("Mazeika LLC", Currency.getInstance("USD")))
     }
 
     override fun onCreate(dialogViewFactory: (ClientBinder) -> Node): Boolean {
@@ -68,6 +64,7 @@ class ClientsAdminBinder @Inject constructor(
 
     private inner class EmptyClientBinder :
         ClientBinder(
+            id = UUID.randomUUID(),
             name = "",
             currency = i18nService.defaultCurrency
         ) {
@@ -81,7 +78,11 @@ class ClientsAdminBinder @Inject constructor(
     }
 
     private inner class FilledClientBinder(val client: Client) :
-        ClientBinder(name = client.name, currency = client.currency) {
+        ClientBinder(
+            id = client.id,
+            name = client.name,
+            currency = client.currency
+        ) {
 
         val isValid: ObservableBooleanValue =
             Bindings.createBooleanBinding({

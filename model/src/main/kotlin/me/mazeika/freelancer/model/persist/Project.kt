@@ -1,14 +1,14 @@
 package me.mazeika.freelancer.model.persist
 
 import me.mazeika.freelancer.model.Project
-import org.jetbrains.exposed.dao.IntEntity
-import org.jetbrains.exposed.dao.IntEntityClass
+import org.jetbrains.exposed.dao.UUIDEntity
+import org.jetbrains.exposed.dao.UUIDEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.dao.id.IntIdTable
+import org.jetbrains.exposed.dao.id.UUIDTable
 import org.jetbrains.exposed.sql.ReferenceOption
 import java.util.*
 
-object ProjectTable : IntIdTable("projects") {
+object ProjectTable : UUIDTable() {
     val client =
         reference("client", ClientTable, onDelete = ReferenceOption.CASCADE)
     val name = varchar("name", 128).uniqueIndex()
@@ -17,8 +17,8 @@ object ProjectTable : IntIdTable("projects") {
     val currency = varchar("currency", 3)
 }
 
-class ProjectEntity(id: EntityID<Int>) : IntEntity(id) {
-    companion object : IntEntityClass<ProjectEntity>(ProjectTable)
+class ProjectEntity(id: EntityID<UUID>) : UUIDEntity(id) {
+    companion object : UUIDEntityClass<ProjectEntity>(ProjectTable)
 
     var client by ClientEntity referencedOn ProjectTable.client
     var name by ProjectTable.name
@@ -27,6 +27,7 @@ class ProjectEntity(id: EntityID<Int>) : IntEntity(id) {
     var currency by ProjectTable.currency
 
     fun createModel(): Project = Project(
+        id = id.value,
         client = client.createModel(),
         name = name,
         colorIndex = colorIndex,

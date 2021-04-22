@@ -48,10 +48,8 @@ class LineItemsAdminBinder @Inject constructor(
         store.replaceLineItem(
             old = item.timeLineItem,
             new = item.timeLineItem.copy(end = Instant.now().let {
-                if (it.nano > 0) {
+                if (it.nano == 0) it else {
                     it.plusSeconds(1).truncatedTo(ChronoUnit.SECONDS)
-                } else {
-                    it
                 }
             })
         )
