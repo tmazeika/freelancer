@@ -3,7 +3,7 @@ plugins {
 }
 
 javafx {
-    version = "15.0.1"
+    version = "12"
     modules = listOf("javafx.graphics")
 }
 
